@@ -2,6 +2,7 @@ package login
 
 import (
 	"autoTest/store/config"
+	"autoTest/store/logger"
 	"autoTest/store/model"
 	"autoTest/store/request"
 	"autoTest/store/utils"
@@ -48,5 +49,16 @@ func LoginY1(ctx context.Context, username, password string) (*model.Response, *
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/Login 响应解析失败", err)), nil, err
 	} else {
 		return resp, &ctxToken, nil
+	}
+}
+
+// 主要是返回上下文
+func ReturnContextLoginY1(username, password string) (*context.Context, error) {
+	ctx := context.Background()
+	if _, ctxToken, err := LoginY1(ctx, username, password); err != nil {
+		logger.LogError("LoginY1['/api/Home/Login']登录失败", err)
+		return nil, err
+	} else {
+		return ctxToken, nil
 	}
 }

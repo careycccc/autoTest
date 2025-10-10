@@ -6,6 +6,7 @@ import (
 	"autoTest/store/model"
 	"autoTest/store/request"
 	"context"
+	"sync"
 )
 
 // 人工充值接口M
@@ -24,11 +25,13 @@ userid 用户id
 rechargeAmount 充值金额
 amountOfCode 打码量
 */
-func ArtificialRechargeFunc(ctx *context.Context, userid, rechargeAmount int64, amountOfCode int8) (*model.Response, error) {
+func ArtificialRechargeFunc(ctx *context.Context, userid, rechargeAmount int64, amountOfCode int8, wg *sync.WaitGroup) (*model.Response, error) {
+	wg.Add(1)
+	defer wg.Done()
 	api := "/api/ArtificialRechargeRecord/ArtificialRecharge"
 	payloadStruct := &ManualRecharge{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{3, rechargeAmount, "carey3003", 2, userid, random, language, "", timestamp}
+	payloadList := []interface{}{3, rechargeAmount, "carey3003", amountOfCode, userid, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/ArtificialRechargeRecord/ArtificialRecharge请求失败", err)), err
 	} else {

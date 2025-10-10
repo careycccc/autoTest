@@ -11,8 +11,8 @@ import (
 )
 
 // 负责组装投注
-func BetRun() error {
-	userName := "919111997678"
+func BetRun(userName string) error {
+	//userName := "919111997678"
 	// 进行前台登录
 	ctx := context.Background()
 	if _, tokenCtx, err := login.LoginY1(ctx, userName, "qwer1234"); err != nil {

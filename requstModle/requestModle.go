@@ -2,6 +2,7 @@ package requstmodle
 
 import (
 	login "autoTest/API/adminApi/login"
+	desklogin "autoTest/API/deskApi/loginApi"
 	"autoTest/store/config"
 	"autoTest/store/model"
 	"autoTest/store/request"
@@ -27,7 +28,8 @@ func DeskTenAuthorRequest[P any](ctx *context.Context, api string, payload *P, p
 	// 请求头的设定
 	header_struct := &model.DeskHeaderAuthorizationStruct{}
 	plant_h5 := config.PLANT_H5
-	token := (*ctx).Value(login.AuthTokenKey)
+	token := (*ctx).Value(desklogin.DeskAuthTokenKey)
+	//fmt.Println("前台登陆后的token", token)
 	header_list := []interface{}{config.TENANTID, plant_h5, plant_h5, plant_h5, token}
 	if headerMap, err := request.AssignSliceToStructMap(header_struct, header_list); err != nil {
 		return nil, nil, errors.New("failed to convert headerMap struct to map")

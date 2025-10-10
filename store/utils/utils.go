@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/big"
 
 	// "math/rand"
 	"crypto/rand"
@@ -190,4 +191,21 @@ func GenerateCryptoRandomString(length int) string {
 	}
 	// fmt.Println("本次指纹", string(bytes))
 	return string(bytes)
+}
+
+// 随机生成 min max的数据
+func GenerateRandomInt(min, max int64) (int64, error) {
+	if min > max {
+		return 0, fmt.Errorf("min must be less than or equal to max")
+	}
+
+	// 生成一个大于等于0且小于max-min的随机数
+	randomInt, err := rand.Int(rand.Reader, big.NewInt(max-min))
+	if err != nil {
+		return 0, err
+	}
+
+	// 将随机数加上最小值，得到最终的随机数范围在[min, max]之间
+	randomInt.Add(randomInt, big.NewInt(min))
+	return randomInt.Int64(), nil
 }
