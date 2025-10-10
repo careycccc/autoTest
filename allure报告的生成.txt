@@ -1,0 +1,11 @@
+allure generate ./allure-results -o ./allure-report --clean --single-file  //生成报告单个文件
+
+allure generate ./allure-results -o ./allure-report --clean  //生成报告多个文件
+
+allure serve ./allure-results  // 打开报告  切记不要直接打开html
+
+go test -v ./... -parallel 1  // 关闭并行 因为只有1
+
+go test -v ./testcase/deskLoginTest -run TestLogin
+
+
