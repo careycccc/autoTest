@@ -1,1 +1,1 @@
-这是一个自己编写的接口自动化测试框架
+this is golang autoTest 3003
