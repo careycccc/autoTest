@@ -2,6 +2,7 @@ package memberlist
 
 import (
 	requstmodle "autoTest/requstModle"
+	"autoTest/store/config"
 	"autoTest/store/model"
 	"autoTest/store/request"
 	"context"
@@ -51,5 +52,40 @@ func GetUserIdApi(ctx *context.Context, account string) (*model.Response, int64,
 			}
 		}
 
+	}
+}
+
+// 后台添加用户的
+type addUserInfoStruct struct {
+	Account      any `json:"account"` // 添加的用户的账号91号码
+	UserType     any `json:"userType"`
+	PassWord     any `json:"password"`
+	Remark       any `json:"remark"`
+	RegisterType any `json:"registerType"`
+}
+
+// 添加用户
+type AddUserStruct struct {
+	AddUserList []addUserInfoStruct `json:"addUserList"`
+	Random      any                 `json:"random"`
+	Language    any                 `json:"language"`
+	Signature   any                 `json:"signature"`
+	Timestamp   any                 `json:"timestamp"`
+}
+
+// 需要传入用户的电话号码
+func AddUsers(ctx *context.Context, userAmount string) (*model.Response, error) {
+	api := "/api/Users/AddUsers"
+	timestamp, random, language := request.GetTimeRandom()
+	payloadStruct := &AddUserStruct{}
+	payloadList := []interface{}{userAmount, 0, config.SUB_PWD, "", 1, random, language, "", timestamp}
+	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
+		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/AddUsers请求失败", err)), err
+	} else {
+		if resp, err := model.ParseResponse(respBoy); err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/AddUsers解析失败", err)), err
+		} else {
+			return resp, nil
+		}
 	}
 }

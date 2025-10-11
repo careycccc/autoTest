@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"autoTest/store/config"
+	"autoTest/store/logger"
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
@@ -160,21 +162,23 @@ func ReadYAML(filePath string, result interface{}) error {
 	return err
 }
 
-// 写入yaml 以覆盖的方式
-// WriteYAML 以覆盖方式将结构体写入 YAML 文件
-func WriteYAML(filePath string, data interface{}) error {
-	// 将结构体编码为 YAML 数据
-	yamlData, err := yaml.Marshal(data)
-	// fmt.Printf("文件路径%s,写入的文件内容%v", filePath, yamlData)
+// WriteYAML 将数据追加写入到 ./yaml/subUser.yaml 文件，每行一个数据
+func WriteYAML(data ...interface{}) error {
+	file, err := os.OpenFile(config.SUBUSERYAML, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return fmt.Errorf("编码 YAML 数据失败: %w", err)
+		logger.LogError("文件创建或者打开失败", err)
+		return err
 	}
+	defer file.Close()
 
-	// 以覆盖方式写入文件（os.Create 会创建或覆盖文件）
-	if err := os.WriteFile(filePath, yamlData, 0644); err != nil {
-		return fmt.Errorf("写入 YAML 文件失败: %w", err)
+	for _, v := range data {
+		// 将数据转换为字符串并写入，带换行符
+		_, err := file.WriteString(fmt.Sprintf("%v\n", v))
+		if err != nil {
+			logger.LogError("文件写入失败", err)
+			return err
+		}
 	}
-
 	return nil
 }
 

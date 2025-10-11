@@ -154,38 +154,64 @@ func RunSpinInvitedWheelWork() error {
 	userList := utils.RandmoUserId(config.GeneralAgentNumber)
 	// 把生成的账号进行总代的方式进行注册
 	for i := range userList {
+		// 把生成的下级账号写入到yaml中
+		go sutils.WriteYAML(userList[i])
 		//进行注册
 		if _, ctxToken, err := registerapi.GeneralAgentRegister(userList[i]); err != nil {
 			return err
 		} else {
 			logger.Logger.Info("注册成功并且成功登录", userList[i])
-			// 点击4个礼物盒子
-			if _, result, err := ClickSpinInvitedWheel(ctxToken); err != nil {
+			ch := make(chan struct{}, 1)
+			err := NewRound(ctxToken, ch)
+			if err != nil {
+				return err
+			}
+			<-ch
+			// 进行下一轮的判别
+			if config.WHEELNUMBER == 1 {
+				return nil
+			}
+			newRoundCh := make(chan struct{}, 1)
+			for i := 1; i <= config.WHEELNUMBER; i++ {
+				err := NewRound(ctxToken, newRoundCh)
+				if err != nil {
+					return err
+				}
+				<-newRoundCh
+			}
+		}
+	}
+	return nil
+
+}
+
+// 新的一轮
+func NewRound(ctx *context.Context, ch chan<- struct{}) error {
+	// 点击4个礼物盒子
+	if _, result, err := ClickSpinInvitedWheel(ctx); err != nil {
+		return err
+	} else {
+		logger.Logger.Info("邀请转盘的活动开启", result)
+		// 旋转邀请转盘	旋转免费次数
+		if result, err := request.RetryWrapper(ClickSpinningTurntable, ctx); err != nil {
+			return err
+		} else {
+			logger.Logger.Info("本次旋转的金额", result[1])
+			// 分享邀请链接
+			if _, InviteCode, err := ClickShareLink(ctx); err != nil {
 				return err
 			} else {
-				logger.Logger.Info("邀请转盘的活动开启", result)
-				// 旋转邀请转盘	旋转免费次数
-				if result, err := request.RetryWrapper(ClickSpinningTurntable, ctxToken); err != nil {
+				logger.Logger.Info("分享链接以点击", InviteCode)
+				// 邀请下一级
+				if moneny, err := sutils.GenerateRandomInt(config.MIN_MONENY, config.MAX_MONENY); err != nil {
 					return err
 				} else {
-					logger.Logger.Info("本次旋转的金额", result[1])
-					// 分享邀请链接
-					if _, InviteCode, err := ClickShareLink(ctxToken); err != nil {
-						return err
-					} else {
-						logger.Logger.Info("分享链接以点击", InviteCode)
-						// 邀请下一级
-						if moneny, err := sutils.GenerateRandomInt(config.MIN_MONENY, config.MAX_MONENY); err != nil {
-							return err
-						} else {
-							RunTaskWhille(InviteCode, moneny, ctxToken)
-						}
-					}
+					RunTaskWhille(InviteCode, moneny, ctx)
 				}
 			}
 		}
 	}
-
+	ch <- struct{}{}
 	return nil
 }
 

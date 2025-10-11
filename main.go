@@ -1,7 +1,7 @@
 package main
 
 import (
-	invitationcarousel "autoTest/API/deskApi/invitationCarousel"
+	rechargewheel "autoTest/API/deskApi/activeGIft/rechargeWheel"
 	_ "autoTest/API/deskApi/loginApi"
 
 	_ "autoTest/store/config"
@@ -24,7 +24,7 @@ func init() {
 }
 
 func main() {
-	invitationcarousel.RunSpinInvitedWheelWork()
+	rechargewheel.RunRechargeWheelCondition()
 }
 
 // // someFunction 模拟一个返回错误的函数
