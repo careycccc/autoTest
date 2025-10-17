@@ -6,7 +6,6 @@ import (
 	"autoTest/store/model"
 	"autoTest/store/request"
 	"context"
-	"sync"
 )
 
 // 人工充值接口M
@@ -25,9 +24,7 @@ userid 用户id
 rechargeAmount 充值金额
 amountOfCode 打码量
 */
-func ArtificialRechargeFunc(ctx *context.Context, userid, rechargeAmount int64, amountOfCode int8, wg *sync.WaitGroup) (*model.Response, error) {
-	wg.Add(1)
-	defer wg.Done()
+func ArtificialRechargeFunc(ctx *context.Context, userid int, rechargeAmount float64, amountOfCode int8) (*model.Response, error) {
 	api := "/api/ArtificialRechargeRecord/ArtificialRecharge"
 	payloadStruct := &ManualRecharge{}
 	timestamp, random, language := request.GetTimeRandom()

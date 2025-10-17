@@ -1,22 +1,27 @@
 package rechargewheel
 
 import (
+	financialmanagement "autoTest/API/adminApi/financialManagement"
 	"autoTest/API/adminApi/login"
 	getgiftinfo "autoTest/API/deskApi/activeGIft/GetGiftInfo"
+	getuserinfo "autoTest/API/deskApi/getUserinfo"
+	registerapi "autoTest/API/deskApi/registerApi"
+	"autoTest/API/utils"
 	requstmodle "autoTest/requstModle"
 	"autoTest/store/logger"
 	"autoTest/store/model"
 	"autoTest/store/request"
 	"context"
 	"encoding/json"
-	"fmt"
+	"sync"
+	"time"
 )
 
 // 充值转盘的相关的逻辑
 
 type UserRechargeWheelInfo struct {
-	isOpenRechargeWheel          bool // 是否开启了充值转盘 是否显示充值转盘
-	RechargeWheelRemainSpinCount int  // 充值轮盘剩余旋转次数
+	isOpenRechargeWheel          bool    // 是否开启了充值转盘 是否显示充值转盘
+	RechargeWheelRemainSpinCount float64 // 充值轮盘剩余旋转次数
 }
 
 // 获取当前用户充值转盘的，开启信息，剩余旋转次数
@@ -26,7 +31,7 @@ func GetUserRechargeWheelInfo(ctx *context.Context) (UserRechargeWheelInfo, erro
 	} else {
 		info := UserRechargeWheelInfo{
 			isOpenRechargeWheel:          rechargeWheelInfo.IsOpenRechargeWheel.(bool),
-			RechargeWheelRemainSpinCount: rechargeWheelInfo.RechargeWheelRemainSpinCount.(int),
+			RechargeWheelRemainSpinCount: rechargeWheelInfo.RechargeWheelRemainSpinCount.(float64),
 		}
 		return info, nil
 	}
@@ -163,33 +168,100 @@ func GetPageListRewardRecord(ctx *context.Context, userId int) (*model.Response,
 	}
 }
 
+// 返回充值转盘是否开启，剩余旋转次数,充值金额，上下文，用户id
+type getRechargeWheelInfo struct {
+	isShow      bool             // 是否开启充值转盘
+	wheelNumber int              // 剩余旋转次数
+	amount      float64          // 充值金额
+	ctx         *context.Context // 上下文
+	userId      int              // 用户id
+}
+
 // 运行充值转盘的任务
-func RunRechargeWheelCondition() {
-	if ctx, err := login.RunAdminSitLogin(); err != nil {
-		logger.LogError("充值转盘的后台登录失败", err)
-		return
-	} else {
-		amount := ReturnRechargeAmount(ctx) // 要充值的金额
-		fmt.Println(amount)
-		resp, list, _ := GetPageListRewardRecord(ctx, 2440414)
-		fmt.Println(resp)
-		fmt.Println(list)
+func RunRechargeWheelCondition(value1 int8) {
+	rechargeWheelInfo := CallRechargeWheelCondition(value1)
+	if rechargeWheelInfo.isShow {
+		logger.Logger.Info("充值转盘是否开启", rechargeWheelInfo.isShow)
+		// 在进行充值
+		if _, err := financialmanagement.ArtificialRechargeFunc(rechargeWheelInfo.ctx, rechargeWheelInfo.userId, rechargeWheelInfo.amount, 2); err != nil {
+			logger.LogError("充值转盘设置充值金额失败", err)
+			return
+		}
+		time.Sleep(1 * time.Second) // 等待1秒，确保后台处理完成
+		// 旋转充值转盘
+
 	}
 }
 
-func CallRechargeWheelCondition(value1 int8) {
+/*
+随机一个账号，设置充值转盘的条件
+value1  0表示不需要充值   1，首充 2，二充  3，三充
+返回充值转盘是否开启，剩余旋转次数,充值金额
+*
+*/
+func CallRechargeWheelCondition(value1 int8) *getRechargeWheelInfo {
 	// 第一步后台登录
 	if ctx, err := login.RunAdminSitLogin(); err != nil {
 		logger.LogError("充值转盘的后台登录失败", err)
-		return
+		return &getRechargeWheelInfo{isShow: false, wheelNumber: 0, amount: 0.0}
 	} else {
-		//var wg *sync.WaitGroup
-		go func() {
-			// 设置条件
-			if _, err := SetRechargeWheelCondition(ctx, value1); err != nil {
+		// 复制 ctx 避免作用域问题
+		adminCtx := ctx
+		// 获取需要充值的金额
+		amount := ReturnRechargeAmount(ctx)
+
+		// 随机生成一个用户
+		userCount, err := utils.RandmoUserCount() // 注意：应该是 RandUserCount？
+		if err != nil {
+			logger.LogError("充值转盘随机生成用户失败", err)
+			return &getRechargeWheelInfo{isShow: false, wheelNumber: 0, amount: 0.0}
+		}
+		logger.Logger.Info("充值转盘随机生成的用户", userCount)
+
+		// 获取进行注册登录总代的方式
+		_, ctxToken, err := registerapi.GeneralAgentRegister(userCount)
+		if err != nil {
+			logger.LogError("充值转盘随机生成用户注册登录失败", err)
+			return &getRechargeWheelInfo{isShow: false, wheelNumber: 0, amount: 0.0}
+		}
+
+		_, userInfo, err := getuserinfo.GetUserInfo(ctxToken)
+		if err != nil {
+			logger.LogError("充值转盘随机生成用户注册登录后获取用户信息失败", err)
+			return &getRechargeWheelInfo{isShow: false, wheelNumber: 0, amount: 0.0}
+		}
+		//logger.Logger.Info("充值转盘随机生成用户注册登录后获取用户信息", resp, userInfo)
+		userId := int(userInfo.UserID)
+		// 并发处理
+		wg := &sync.WaitGroup{}
+		wg.Add(2)
+		// 设置充值转盘的条件
+		go func(wg *sync.WaitGroup, ctxToUse *context.Context, val int8) {
+			defer wg.Done()
+			if _, err := SetRechargeWheelCondition(ctxToUse, val); err != nil {
+				logger.LogError("设置充值转盘条件失败", err)
 				return
 			}
-		}()
+			//logger.Logger.Info("充值转盘条件设置成功")
+		}(wg, adminCtx, value1)
 
+		// 设置充值金额
+		go func(wg *sync.WaitGroup, ctxToUse *context.Context) {
+			defer wg.Done()
+			if _, err := financialmanagement.ArtificialRechargeFunc(ctxToUse, userId, amount, 2); err != nil {
+				logger.LogError("充值转盘设置充值金额失败", err)
+				return
+			}
+		}(wg, adminCtx)
+
+		wg.Wait()
+		time.Sleep(1 * time.Second) // 等待1秒，确保后台处理完成
+		// 最后获取用户的充值转盘信息
+		if info, err := GetUserRechargeWheelInfo(ctxToken); err != nil {
+			logger.LogError("获取用户充值转盘信息失败", err)
+			return &getRechargeWheelInfo{isShow: false, wheelNumber: 0, amount: 0.0}
+		} else {
+			return &getRechargeWheelInfo{isShow: info.isOpenRechargeWheel, wheelNumber: int(info.RechargeWheelRemainSpinCount), amount: amount, ctx: ctxToken, userId: userId}
+		}
 	}
 }

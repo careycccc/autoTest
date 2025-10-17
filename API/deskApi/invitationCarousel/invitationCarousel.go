@@ -268,7 +268,7 @@ func ClickWheelWithdrawFunc(amount float64, ctx *context.Context) (*model.Respon
 
 // 运行并行的任务
 // 只要填写邀请码，自动邀请下级，并且充值
-func RunTaskWhille(yqCode string, monenyCount int64, ctx *context.Context) {
+func RunTaskWhille(yqCode string, monenyCount float64, ctx *context.Context) {
 	rand.Seed(time.Now().UnixNano()) // 初始化随机种子
 
 	// 定义单个锁保护所有公共数据
@@ -314,7 +314,7 @@ func RunTaskWhille(yqCode string, monenyCount int64, ctx *context.Context) {
 // 并行邀请人
 // 任务函数，接收三个公共数据及其对应的锁
 // 任务函数，调用 RunWhille 并更新公共数据
-func TaskWhille(id int, wg *sync.WaitGroup, yqCode *string, monenyCount *int64, lock *sync.Mutex) {
+func TaskWhille(id int, wg *sync.WaitGroup, yqCode *string, monenyCount *float64, lock *sync.Mutex) {
 	defer wg.Done()
 	// 随机生成账号
 	userAmount, _ := utils.RandmoUserCount()
@@ -331,7 +331,7 @@ userAmount  邀请下级的账号
 yqCode  邀请人的邀请码
 monenyCount 邀请转盘的充值金额
 **/
-func RunWhille(userAmount string, yqCode string, monenyCount int64) error {
+func RunWhille(userAmount string, yqCode string, monenyCount float64) error {
 	// 发送注册
 	if _, ctxToken, err := registerapi.RegisterMobileLoginFunc(userAmount, yqCode); err != nil {
 		return err
@@ -343,17 +343,27 @@ func RunWhille(userAmount string, yqCode string, monenyCount int64) error {
 			logger.LogError("后台登录失败", err)
 			return err
 		}
+		time.Sleep(time.Second * 1)
 		// 后台获取用户id
 		_, userId, err := memberlist.GetUserIdApi(ctxAdminToken, userAmount)
 		if err != nil {
 			return err
 		}
 		logger.Logger.Info("userid的值", userId)
-		var wg sync.WaitGroup
+		adminToken := *ctxAdminToken
+		wg := &sync.WaitGroup{}
+		wg.Add(2)
 		// 根据id进行充值
-		go financialmanagement.ArtificialRechargeFunc(ctxAdminToken, userId, monenyCount, 2, &wg)
+		go func(wg *sync.WaitGroup, ctxToUse *context.Context) {
+			defer wg.Done()
+			financialmanagement.ArtificialRechargeFunc(ctxToUse, int(userId), monenyCount, 2)
+		}(wg, &adminToken)
+
 		// 修改用户密码
-		go memberlist.UpdatePassword(ctxAdminToken, userId, config.SUB_PWD, &wg)
+		go func(wg *sync.WaitGroup, ctxToUse *context.Context) {
+			defer wg.Done()
+			memberlist.UpdatePassword(ctxToUse, userId, config.SUB_PWD)
+		}(wg, &adminToken)
 
 		wg.Wait()
 		logger.Logger.Info("充值金额", monenyCount)

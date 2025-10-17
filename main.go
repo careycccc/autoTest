@@ -1,9 +1,7 @@
 package main
 
 import (
-	rechargewheel "autoTest/API/deskApi/activeGIft/rechargeWheel"
-	_ "autoTest/API/deskApi/loginApi"
-
+	"autoTest/API/excel"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -24,7 +22,15 @@ func init() {
 }
 
 func main() {
-	rechargewheel.RunRechargeWheelCondition()
+
+	// ctx := context.Background()
+	// _, ctxToken, err := login.AdminSitLogin(&ctx)
+	// if err != nil {
+	// 	logger.LogError("登录失败", err)
+	// 	return
+	// }
+	excel.RunExcel()
+
 }
 
 // // someFunction 模拟一个返回错误的函数

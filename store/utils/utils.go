@@ -3,6 +3,7 @@ package utils
 import (
 	"autoTest/store/config"
 	"autoTest/store/logger"
+	"bufio"
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
@@ -182,6 +183,32 @@ func WriteYAML(data ...interface{}) error {
 	return nil
 }
 
+// ReadYAMLByLine 逐行读取YAML文件，返回字符串列表
+func ReadYAMLByLine(filePath string) ([]string, error) {
+	// 打开文件
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// 创建字符串切片存储每一行
+	var lines []string
+	scanner := bufio.NewScanner(file)
+
+	// 逐行读取
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	// 检查扫描过程中是否出现错误
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return lines, nil
+}
+
 // 生成随机浏览器指纹
 func GenerateCryptoRandomString(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
@@ -198,7 +225,7 @@ func GenerateCryptoRandomString(length int) string {
 }
 
 // 随机生成 min max的数据
-func GenerateRandomInt(min, max int64) (int64, error) {
+func GenerateRandomInt(min, max int64) (float64, error) {
 	if min > max {
 		return 0, fmt.Errorf("min must be less than or equal to max")
 	}
@@ -211,5 +238,6 @@ func GenerateRandomInt(min, max int64) (int64, error) {
 
 	// 将随机数加上最小值，得到最终的随机数范围在[min, max]之间
 	randomInt.Add(randomInt, big.NewInt(min))
-	return randomInt.Int64(), nil
+	f, _ := randomInt.Float64()
+	return f, nil
 }

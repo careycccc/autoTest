@@ -9,6 +9,8 @@ import (
 	"math/big"
 	"sync"
 	"time"
+
+	"github.com/xuri/excelize/v2"
 )
 
 // 处理基础的struct,返回payloadStruct, payloadList
@@ -86,4 +88,54 @@ func RandmoUserCount() (string, error) {
 
 	// 合并前缀和随机数
 	return "91" + prefix + randStr, nil
+}
+
+// WriteExcelFromSlice 封装函数：切片数据写入新Excel，返回完整Excel对象
+// 参数1: dataSlice - [][]interface{} 切片，每个子切片对应一行，每列顺序对应表头
+// 参数2: sourcePath - string 源Excel文件路径
+// 返回: *excelize.File - 全新Excel文件对象（表头来自源文件第一行，数据从第二行开始）
+func WriteExcelFromSlice(dataSlice [][]interface{}, sourcePath string) (*excelize.File, error) {
+	// 1. 读取源文件第一行表头
+	fSource, err := excelize.OpenFile(sourcePath)
+	if err != nil {
+		logger.LogError("打开源文件失败", err)
+		return nil, fmt.Errorf("打开源文件失败: %v", err)
+	}
+	defer fSource.Close()
+
+	sheetName := fSource.GetSheetName(0)
+	rows, err := fSource.GetRows(sheetName)
+	if err != nil || len(rows) == 0 {
+		logger.LogError("读取源文件表头失败", err)
+		return nil, fmt.Errorf("读取源文件表头失败")
+	}
+	headers := rows[0] // 第一行作为表头
+
+	// 2. 创建新Excel文件
+	fNew := excelize.NewFile()
+	newSheet := "Sheet1"
+
+	// 3. 写入表头（第一行）
+	for col, header := range headers {
+		cell := fmt.Sprintf("%c1", 'A'+col)
+		fNew.SetCellValue(newSheet, cell, header)
+	}
+
+	// 4. 写入数据（从第二行开始）
+	for rowIdx, rowData := range dataSlice {
+		rowNum := rowIdx + 2 // 第2行、第3行...
+
+		for colIdx, cellValue := range rowData {
+			if colIdx >= len(headers) {
+				break // 超出表头列数，停止写入
+			}
+			cell := fmt.Sprintf("%c%d", 'A'+colIdx, rowNum)
+			fNew.SetCellValue(newSheet, cell, cellValue)
+		}
+	}
+
+	// 5. 自动调整列宽
+	lastCol := 'A' + len(headers) - 1
+	fNew.SetColWidth(newSheet, "A", fmt.Sprintf("%c", lastCol), 15)
+	return fNew, nil
 }

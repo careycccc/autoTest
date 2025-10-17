@@ -5,7 +5,6 @@ import (
 	"autoTest/store/model"
 	"autoTest/store/request"
 	"context"
-	"sync"
 )
 
 type UpdataPasswordstruct struct {
@@ -15,9 +14,7 @@ type UpdataPasswordstruct struct {
 }
 
 // 后台修改密码
-func UpdatePassword(ctx *context.Context, userid int64, password string, wg *sync.WaitGroup) (*model.Response, error) {
-	wg.Add(1)
-	defer wg.Done()
+func UpdatePassword(ctx *context.Context, userid int64, password string) (*model.Response, error) {
 	api := "/api/Users/UpdatePassword"
 	payloadStruct := &UpdataPasswordstruct{}
 	timestamp, random, language := request.GetTimeRandom()
