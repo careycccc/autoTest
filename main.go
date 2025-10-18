@@ -1,7 +1,7 @@
 package main
 
 import (
-	"autoTest/API/excel"
+	rechargewheel "autoTest/API/deskApi/activeGIft/rechargeWheel"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -29,7 +29,8 @@ func main() {
 	// 	logger.LogError("登录失败", err)
 	// 	return
 	// }
-	excel.RunExcel()
+	rechargewheel.RunRechargeWheelCondition(3)
+	//excel.RunExcel()
 
 }
 

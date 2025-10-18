@@ -11,7 +11,7 @@ import (
 
 func RunExcel() {
 	// 示例使用
-	userIdlist := getUserId(10, 0)
+	userIdlist := getUserId(1000, 0)
 	if userIdlist == nil {
 		logger.LogError("获取用户ID失败", nil)
 		return
