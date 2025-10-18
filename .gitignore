@@ -1,0 +1,10 @@
+# 忽略所有 .excel 文件
+*.xlsx
+*excel
+# 忽略所有 .yaml 文件
+*.yaml
+
+*.txt
+
+# 或者忽略特定目录下的 yaml（可选）
+config/*.yaml
