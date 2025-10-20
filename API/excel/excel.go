@@ -11,12 +11,11 @@ import (
 
 func RunExcel() {
 	// 示例使用
-	userIdlist := getUserId(1000, 0)
+	userIdlist := getUserId(3000, 0)
 	if userIdlist == nil {
 		logger.LogError("获取用户ID失败", nil)
 		return
 	}
-
 	dataSlice := generateUserDataSlice(userIdlist)
 	sourcePath := "./1111.xlsx" // 你的源文件路径  需要放在项目的根目录中
 
@@ -66,7 +65,7 @@ func generateUserDataSlice(userIDs []int) [][]interface{} {
 
 	// 固定字段：-1 和 "测试112"
 	level := -1
-	userType := "测试112"
+	userType := "测试114"
 
 	// 遍历所有userid，逐个append
 	for _, userID := range userIDs {

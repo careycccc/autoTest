@@ -1,7 +1,7 @@
 package main
 
 import (
-	rechargewheel "autoTest/API/deskApi/activeGIft/rechargeWheel"
+	invitecode "autoTest/API/deskApi/inviteCode"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -29,12 +29,7 @@ func main() {
 	// 	logger.LogError("登录失败", err)
 	// 	return
 	// }
-	rechargewheel.RunRechargeWheelCondition(3)
+	invitecode.RunInvite()
 	//excel.RunExcel()
 
 }
-
-// // someFunction 模拟一个返回错误的函数
-// func someFunction() error {
-// 	return fmt.Errorf("出现错误")
-// }

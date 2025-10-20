@@ -418,30 +418,3 @@ func RunRechargeWheelCondition(value1 int8) {
 	}
 
 }
-
-// 检验充值转盘的充值任务全部流程
-func RunWork() {
-	wg := &sync.WaitGroup{}
-	wg.Add(4)
-	go func(wg *sync.WaitGroup) {
-		defer wg.Done()
-		// 不需要充值
-		RunRechargeWheelCondition(0)
-	}(wg)
-	go func(wg *sync.WaitGroup) {
-		defer wg.Done()
-		// 不需要充值
-		RunRechargeWheelCondition(1)
-	}(wg)
-	go func(wg *sync.WaitGroup) {
-		defer wg.Done()
-		// 不需要充值
-		RunRechargeWheelCondition(2)
-	}(wg)
-	go func(wg *sync.WaitGroup) {
-		defer wg.Done()
-		// 不需要充值
-		RunRechargeWheelCondition(3)
-	}(wg)
-	wg.Wait()
-}
