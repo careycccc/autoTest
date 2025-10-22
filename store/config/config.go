@@ -29,6 +29,7 @@ const (
 	WHEELNUMBER           = 1                                                // 活动的轮数，比如邀请转盘的就是1轮
 	SiteMessageNumber     = 5                                                // 站内信发送个数
 	SiteMessageConcurrent = 3                                                // 站内信并发
+	WithdrawPassword      = "123456"                                         // 提现密码
 )
 
 // 一些配置信息  uat环境

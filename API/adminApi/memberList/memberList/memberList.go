@@ -187,7 +187,7 @@ func GetUserListApi(ctx *context.Context, userNumber int, userType int8) (*model
 	api := "/api/Users/GetPageList"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &GetUserListStruct{}
-	pageSize := 10
+	pageSize := 150
 	payloadList := []interface{}{userType, pageSize, userNumber, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList请求失败", err)), nil, err

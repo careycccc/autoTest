@@ -1,7 +1,7 @@
 package main
 
 import (
-	invitecode "autoTest/API/deskApi/inviteCode"
+	"autoTest/API/excel"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -29,7 +29,9 @@ func main() {
 	// 	logger.LogError("登录失败", err)
 	// 	return
 	// }
-	invitecode.RunInvite()
-	//excel.RunExcel()
+	//invitecode.RunInvite()
+	excel.RunExcel()
+	//addwallet.RunAddWallet()
+	// withdrawcash.RunWithDrawCase()
 
 }
