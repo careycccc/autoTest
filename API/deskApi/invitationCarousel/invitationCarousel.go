@@ -146,37 +146,57 @@ func RunSpinInvitedWheel() error {
 func RunSpinInvitedWheelWork() error {
 	// 随机生成账号
 	userList := utils.RandmoUserId(config.GeneralAgentNumber)
+	logger.Logger.Info("Generated userList with length:", len(userList))
+
 	// 把生成的账号进行总代的方式进行注册
 	for i := range userList {
-		// 把生成的下级账号写入到yaml中
-		go sutils.WriteYAML(userList[i])
-		//进行注册
-		if _, ctxToken, err := registerapi.GeneralAgentRegister(userList[i]); err != nil {
+		logger.Logger.Info("Processing user:", userList[i])
+		// 同步写入 YAML，避免并发问题
+		if err := sutils.WriteYAML(userList[i]); err != nil {
+			logger.Logger.Error("WriteYAML failed for user", userList[i], "with error:", err)
 			return err
-		} else {
-			logger.Logger.Info("注册成功并且成功登录", userList[i])
-			ch := make(chan struct{}, 1)
-			err := NewRound(ctxToken, ch)
+		}
+
+		// 进行注册
+		_, ctxToken, err := registerapi.GeneralAgentRegister(userList[i])
+		if err != nil {
+			logger.Logger.Error("GeneralAgentRegister failed for user", userList[i], "with error:", err)
+			return err
+		}
+		logger.Logger.Info("注册成功并且成功登录", userList[i])
+
+		// 第一次轮次
+		ch := make(chan struct{}, 1)
+		err = NewRound(ctxToken, ch)
+		if err != nil {
+			logger.Logger.Error("NewRound failed for first round for user", userList[i], "with error:", err)
+			return err
+		}
+		<-ch
+		logger.Logger.Info("First round completed for user", userList[i])
+
+		// 检查是否需要进行下一轮
+		logger.Logger.Info("WHEELNUMBER value for user", userList[i], ":", config.WHEELNUMBER)
+		if config.WHEELNUMBER <= 1 {
+			logger.Logger.Warn("WHEELNUMBER is", config.WHEELNUMBER, "skipping further rounds for user", userList[i])
+			continue // 跳到下一个用户，而不是直接 return
+		}
+
+		// 进行额外的轮次
+		newRoundCh := make(chan struct{}, 1)
+		for j := 1; j <= config.WHEELNUMBER; j++ {
+			logger.Logger.Info("Starting NewRound iteration", j, "for user", userList[i])
+			err := NewRound(ctxToken, newRoundCh)
 			if err != nil {
+				logger.Logger.Error("NewRound failed at iteration", j, "for user", userList[i], "with error:", err)
 				return err
 			}
-			<-ch
-			// 进行下一轮的判别
-			if config.WHEELNUMBER == 1 {
-				return nil
-			}
-			newRoundCh := make(chan struct{}, 1)
-			for i := 1; i <= config.WHEELNUMBER; i++ {
-				err := NewRound(ctxToken, newRoundCh)
-				if err != nil {
-					return err
-				}
-				<-newRoundCh
-			}
+			logger.Logger.Info("Waiting for newRoundCh at iteration", j, "for user", userList[i])
+			<-newRoundCh
+			logger.Logger.Info("Received signal from newRoundCh at iteration", j, "for user", userList[i])
 		}
 	}
 	return nil
-
 }
 
 // 新的一轮

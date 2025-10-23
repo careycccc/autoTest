@@ -1,7 +1,7 @@
 package main
 
 import (
-	withdrawcash "autoTest/API/deskApi/WithdrawCash"
+	invitationcarousel "autoTest/API/deskApi/invitationCarousel"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -29,10 +29,11 @@ func main() {
 	// 	logger.LogError("登录失败", err)
 	// 	return
 	// }
-	//invitecode.RunInvite()
+	invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
+	//invitecode.RunInvite()  // 多级下级邀请
 	//excel.RunExcel()
 	//addwallet.RunAddWallet()
-	withdrawcash.RunWithDrawCase()
+	// withdrawcash.RunWithDrawCase()
 	// withdrawalorders.RunWithdraw(2441424, "BankCard", 1211, 1211)
-
+	// vip.RunVip()
 }

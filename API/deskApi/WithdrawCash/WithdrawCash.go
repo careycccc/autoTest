@@ -26,7 +26,7 @@ type withDrawaInfo struct {
 // 提现
 func RunWithDrawCase() {
 	// 用户的手机号码
-	userName := "911020206171"
+	userName := "911022199711"
 	// 判断当前用户是否有钱
 	if _, ctx, err := registerapi.GeneralAgentRegister(userName); err != nil {
 		logger.LogError("提现登录失败", err)
