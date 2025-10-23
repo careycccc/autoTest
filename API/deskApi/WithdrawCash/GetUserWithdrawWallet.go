@@ -14,9 +14,20 @@ type GetUserWithdrawWalletStruct struct {
 }
 
 type getUserWithdrawResponse struct {
-	Data struct {
-		WalletId string `json:"walletId"`
+	Data []struct {
+		WalletID string `json:"walletId"`
 	} `json:"data"`
+}
+
+type Wallet struct {
+	WalletID     string  `json:"walletId"`
+	BankName     string  `json:"bankName"`
+	AccountNo    string  `json:"accountNo"`
+	MobileNo     string  `json:"mobileNo"`
+	NetworkType  *string `json:"networkType"` // 使用指针表示 null
+	CPF          string  `json:"cpf"`
+	AliasAddress *string `json:"aliasAddress"` // 使用指针表示 null
+	IfscCode     *string `json:"ifscCode"`     // 使用指针表示 null
 }
 
 // 获取提现的WithdrawWalletid
@@ -29,6 +40,7 @@ func GetUserWithdrawWallet(ctx *context.Context, withdrawType string) (*model.Re
 	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Withdraw/GetUserWithdrawWallet请求失败", err)), "", err
 	} else {
+
 		var getWithdraw getUserWithdrawResponse
 		if err := json.Unmarshal(respBoy, &getWithdraw); err != nil {
 			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Withdraw/GetUserWithdrawWallet[getWithdraw]解析失败", err)), "", err
@@ -36,7 +48,11 @@ func GetUserWithdrawWallet(ctx *context.Context, withdrawType string) (*model.Re
 		if resp, err := model.ParseResponse(respBoy); err != nil {
 			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Withdraw/GetUserWithdrawWallet解析失败", err)), "", err
 		} else {
-			return resp, getWithdraw.Data.WalletId, nil
+
+			if len(getWithdraw.Data) == 0 {
+				return model.HandlerErrorRes(model.ErrorLoggerType("/api/Withdraw/GetUserWithdrawWallet[getWithdraw.Data[0].WalletID]为空", err)), "", err
+			}
+			return resp, getWithdraw.Data[0].WalletID, nil
 		}
 	}
 }

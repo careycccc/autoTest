@@ -16,7 +16,6 @@ import (
 	sutils "autoTest/store/utils"
 	"context"
 	"encoding/json"
-	"fmt"
 	"math/rand"
 	"sync"
 	"time"
@@ -119,28 +118,23 @@ func RunSpinInvitedWheel() error {
 	if ctx, err := login.ReturnContextLoginY1(userName, "qwer1234"); err != nil {
 		return err
 	} else {
-		if resp, result, err := ClickSpinInvitedWheel(ctx); err != nil {
+		if _, result, err := ClickSpinInvitedWheel(ctx); err != nil {
 			return err
 		} else {
 			if result {
 				logger.Logger.Info("邀请转盘的4个礼物盒点击成功", userName, "结果:", result)
 			}
-			fmt.Println(resp)
-			fmt.Println(result)
+
 			// 点击分享链接，返回邀请码
-			if resp, InviteCode, err := ClickShareLink(ctx); err != nil {
+			if _, InviteCode, err := ClickShareLink(ctx); err != nil {
 				return err
 			} else {
-				fmt.Println(resp)
-				fmt.Println(InviteCode)
 				// 使用重试机制
 				// 旋转转盘
 				if result, err := request.RetryWrapper(ClickSpinningTurntable, ctx); err != nil {
 					return err
 				} else {
-					logger.Logger.Info("本次旋转的金额", result[1])
-					fmt.Println(resp)
-					fmt.Println(result)
+					logger.Logger.Info("本次旋转的金额", result[1], InviteCode)
 					return nil
 				}
 			}

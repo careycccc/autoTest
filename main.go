@@ -1,7 +1,7 @@
 package main
 
 import (
-	"autoTest/API/excel"
+	withdrawcash "autoTest/API/deskApi/WithdrawCash"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -30,8 +30,9 @@ func main() {
 	// 	return
 	// }
 	//invitecode.RunInvite()
-	excel.RunExcel()
+	//excel.RunExcel()
 	//addwallet.RunAddWallet()
-	// withdrawcash.RunWithDrawCase()
+	withdrawcash.RunWithDrawCase()
+	// withdrawalorders.RunWithdraw(2441424, "BankCard", 1211, 1211)
 
 }

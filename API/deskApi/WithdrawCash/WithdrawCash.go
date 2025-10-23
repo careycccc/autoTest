@@ -1,7 +1,10 @@
 package withdrawcash
 
 import (
+	withdrawalorders "autoTest/API/adminApi/financialManagement/withdrawalOrders"
+	addwallet "autoTest/API/adminApi/memberList/addWallet"
 	recoversaasbalance "autoTest/API/deskApi/WithdrawCash/RecoverSaasBalance"
+	getuserinfo "autoTest/API/deskApi/getUserinfo"
 	registerapi "autoTest/API/deskApi/registerApi"
 	requstmodle "autoTest/requstModle"
 	"autoTest/store/config"
@@ -10,30 +13,31 @@ import (
 	"autoTest/store/request"
 	"autoTest/store/utils"
 	"context"
+	"strconv"
 	"sync"
 )
+
+// 后台提现的结构体
+type withDrawaInfo struct {
+	withDrawaAmont float64 // 提现的金额
+	withDrawaType  string  // 提现的类型
+}
 
 // 提现
 func RunWithDrawCase() {
 	// 用户的手机号码
-	userName := "911022199712"
+	userName := "911020206171"
 	// 判断当前用户是否有钱
 	if _, ctx, err := registerapi.GeneralAgentRegister(userName); err != nil {
 		logger.LogError("提现登录失败", err)
 		return
 	} else {
 		deskToken := ctx
-		// 设置提现密码
-		resp, err := SetWithdrawPasswordApi(deskToken)
-		if err != nil {
-			logger.LogError("提现密码设置失败", err)
-			return
-		}
-		logger.Logger.Info("提现密码设置的结果", resp)
 		wg := &sync.WaitGroup{}
 		moneyChan := make(chan *float64, 1)
 		allWithdrawChan := make(chan *recoversaasbalance.AllWithdraw, 1)
-		wg.Add(2)
+		userIdChan := make(chan int, 1)
+		wg.Add(3)
 		go func(ctx *context.Context, ch chan<- *float64) {
 			defer wg.Done()
 			if _, amount, err := recoversaasbalance.RecoverSaasBalance(ctx); err != nil {
@@ -52,13 +56,37 @@ func RunWithDrawCase() {
 				ch <- allWithdraw
 			}
 		}(deskToken, allWithdrawChan)
+		go func(ctx *context.Context, ch chan<- int) {
+			defer wg.Done()
+			// 获取当前会员的会员id
+			if _, userInfo, err := getuserinfo.GetUserInfo(ctx); err != nil {
+				logger.LogError("获取用户信息失败", err)
+				return
+			} else {
+				ch <- userInfo.UserID
+			}
+		}(deskToken, userIdChan)
 		wg.Wait()
-		WithDrawCase(deskToken, <-moneyChan, <-allWithdrawChan)
+		// 进行提现信息的绑定
+		userid := <-userIdChan
+		addwallet.RunAddWallet(strconv.Itoa(userid))
+		// 设置提现密码
+		_, err := SetWithdrawPasswordApi(deskToken)
+		if err != nil {
+			logger.LogError("提现密码设置失败", err)
+			return
+		}
+		withDrawaChan := make(chan *withDrawaInfo, 1)
+		WithDrawCase(deskToken, <-moneyChan, <-allWithdrawChan, withDrawaChan)
+		withDrawa := <-withDrawaChan
+		logger.Logger.Info("提现金额", withDrawa.withDrawaAmont)
+		// 后台进行订单的处理
+		withdrawalorders.RunWithdraw(userid, withDrawa.withDrawaType, withDrawa.withDrawaAmont, withDrawa.withDrawaAmont)
 	}
 }
 
 // 提现
-func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaasbalance.AllWithdraw) {
+func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaasbalance.AllWithdraw, ch chan<- *withDrawaInfo) {
 	// 判断用户是否有钱，每日提现金额是否有值，提现是否有次数，打码量是否满足
 	if *money <= 0.0 {
 		logger.LogError("提现获取用户金额小于等于0", nil)
@@ -72,16 +100,16 @@ func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaas
 	canWithDrawCaseList := filterGreaterOrEqual(*money, allwithdraw.WithdrawAmountList)
 PT:
 	canWithDrawCaseListLen := len(canWithDrawCaseList)
-	i := utils.RandInt(0, canWithDrawCaseListLen)
+	i := utils.RandInt(0, canWithDrawCaseListLen-1)
 	// 随机出来的值 大于 今日可提现的总金额
 	if canWithDrawCaseList[i] > allwithdraw.UserTodayWithdrawAmount {
 		goto PT
 	}
 	// 筛选出了可以提现的金额
 	// 随机提现的大类
-	WithdrawCategoryListLen := len(allwithdraw.WithdrawCategoryList) - 1
+	WithdrawCategoryListLen := len(allwithdraw.WithdrawCategoryList)
 PT2:
-	j := utils.RandInt(0, WithdrawCategoryListLen)
+	j := utils.RandInt(0, WithdrawCategoryListLen-1)
 	if allwithdraw.WithdrawCategoryList[j].WithdrawType == "UPI" {
 		// 提现类型目前不支持upi
 		goto PT2
@@ -95,6 +123,10 @@ PT2:
 		return
 	} else {
 		logger.Logger.Info("提现结果", resp)
+	}
+	ch <- &withDrawaInfo{
+		withDrawaAmont: canWithDrawCaseList[i],
+		withDrawaType:  withdrawType,
 	}
 }
 
@@ -133,7 +165,6 @@ func WithdrawApplyApi(ctx *context.Context, Amount float64, WithdrawCategoryId i
 	if err != nil {
 		return &model.BetResponse{}, nil
 	}
-	// fmt.Println("提现的walletId", walletId)
 	timestamp, random, language := request.GetTimeRandom()
 	payloadList := []interface{}{Amount, walletId, WithdrawCategoryId, WithdrawType, config.WithdrawPassword, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {

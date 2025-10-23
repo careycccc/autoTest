@@ -30,6 +30,7 @@ const (
 	SiteMessageNumber     = 5                                                // 站内信发送个数
 	SiteMessageConcurrent = 3                                                // 站内信并发
 	WithdrawPassword      = "123456"                                         // 提现密码
+	Remark                = "carey4399"                                      // 备注信息
 )
 
 // 一些配置信息  uat环境

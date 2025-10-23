@@ -8,7 +8,6 @@ import (
 	"autoTest/store/request"
 	"autoTest/store/utils"
 	"context"
-	"fmt"
 	"sync"
 )
 
@@ -150,7 +149,6 @@ type AddUpiStruct struct {
 
 func AddUserUpi(ctx *context.Context, userId string) (*model.BetResponse, error) {
 	upiId, err := utils.GenerateUPIFormat()
-	fmt.Println("upi-----", upiId)
 	if err != nil {
 		logger.LogError("报错消息upi地址生成失败", err)
 		return nil, err
@@ -172,8 +170,8 @@ func AddUserUpi(ctx *context.Context, userId string) (*model.BetResponse, error)
 }
 
 // 运行为一个会员添加提现信息
-func RunAddWallet() {
-	userId := "2441424"
+// 会员id绑定提现信息
+func RunAddWallet(userId string) {
 	// 后台登录
 	ctx := context.Background()
 	if _, ctxToken, err := login.AdminSitLogin(&ctx); err != nil {

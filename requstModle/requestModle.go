@@ -13,6 +13,7 @@ import (
 	"net/http"
 )
 
+// 一个函数类型
 type payloadMapfunc func(structType interface{}, slice []interface{}) (map[string]interface{}, error)
 
 /*
