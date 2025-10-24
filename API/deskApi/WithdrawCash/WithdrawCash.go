@@ -15,6 +15,7 @@ import (
 	"context"
 	"strconv"
 	"sync"
+	"time"
 )
 
 // 后台提现的结构体
@@ -26,7 +27,7 @@ type withDrawaInfo struct {
 // 提现
 func RunWithDrawCase() {
 	// 用户的手机号码
-	userName := "911022199711"
+	userName := "912025102401"
 	// 判断当前用户是否有钱
 	if _, ctx, err := registerapi.GeneralAgentRegister(userName); err != nil {
 		logger.LogError("提现登录失败", err)
@@ -66,6 +67,7 @@ func RunWithDrawCase() {
 				ch <- userInfo.UserID
 			}
 		}(deskToken, userIdChan)
+		time.Sleep(time.Second)
 		wg.Wait()
 		// 进行提现信息的绑定
 		userid := <-userIdChan

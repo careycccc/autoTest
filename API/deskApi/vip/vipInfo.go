@@ -91,3 +91,31 @@ func GetUserVipInfo(ctx *context.Context) (*model.Response, GetUserVipInfoData, 
 		}
 	}
 }
+
+// 领取vip奖励
+type PickVipRewardstruct struct {
+	RewardType  any `json:"rewardType"`  // 3周奖励 4月奖励 2是升级奖励
+	RewardLevel any `json:"rewardLevel"` // vip等级
+	model.BaseStruct
+}
+
+/*
+RewardType 领取奖励的类型 // 3周奖励 4月奖励 2是升级奖励
+RewardLevel  vip等级
+*
+*/
+func PickVipRewardApi(ctx *context.Context, rewardType, RewardLevel int8) (*model.Response, error) {
+	api := "/api/VipLevel/PickVipReward"
+	payloadStruct := &PickVipRewardstruct{}
+	timestamp, random, language := request.GetTimeRandom()
+	payloadList := []interface{}{rewardType, RewardLevel, random, language, "", timestamp}
+	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
+		return model.HandlerErrorRes(model.ErrorLoggerType("/api/VipLevel/PickVipReward请求失败", err)), err
+	} else {
+		if resp, err := model.ParseResponse(respBoy); err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/VipLevel/PickVipReward解析失败", err)), err
+		} else {
+			return resp, err
+		}
+	}
+}

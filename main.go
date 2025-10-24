@@ -30,10 +30,7 @@ func main() {
 	// 	return
 	// }
 	invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
-	//invitecode.RunInvite()  // 多级下级邀请
-	//excel.RunExcel()
-	//addwallet.RunAddWallet()
-	// withdrawcash.RunWithDrawCase()
-	// withdrawalorders.RunWithdraw(2441424, "BankCard", 1211, 1211)
-	// vip.RunVip()
+	// invitecode.RunInvite() // 多级下级邀请
+	// withdrawcash.RunWithDrawCase() // 提现
+
 }

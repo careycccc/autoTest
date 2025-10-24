@@ -24,7 +24,7 @@ const (
 	SUB_MINNUMBER         = 3                                                // 下级邀请人数的最小值
 	SUB_MAXMUMBER         = 5                                                // 下级邀请人数的最大值
 	SUB_CONCURRENT        = 3                                                // 邀请下级的并发数
-	GeneralAgentNumber    = 3                                                // 邀请转盘的总代数量
+	GeneralAgentNumber    = 2                                                // 邀请转盘的总代数量
 	SUBUSERYAML           = "./subUser.yaml"                                 // 下级用户写入的目录
 	WHEELNUMBER           = 1                                                // 活动的轮数，比如邀请转盘的就是1轮
 	SiteMessageNumber     = 5                                                // 站内信发送个数
