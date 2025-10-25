@@ -27,7 +27,7 @@ type withDrawaInfo struct {
 // 提现
 func RunWithDrawCase() {
 	// 用户的手机号码
-	userName := "912025102401"
+	userName := "911023199714"
 	// 判断当前用户是否有钱
 	if _, ctx, err := registerapi.GeneralAgentRegister(userName); err != nil {
 		logger.LogError("提现登录失败", err)
@@ -67,8 +67,8 @@ func RunWithDrawCase() {
 				ch <- userInfo.UserID
 			}
 		}(deskToken, userIdChan)
-		time.Sleep(time.Second)
 		wg.Wait()
+		time.Sleep(time.Second)
 		// 进行提现信息的绑定
 		userid := <-userIdChan
 		addwallet.RunAddWallet(strconv.Itoa(userid))
