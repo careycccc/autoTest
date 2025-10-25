@@ -27,7 +27,7 @@ type withDrawaInfo struct {
 // 提现
 func RunWithDrawCase() {
 	// 用户的手机号码
-	userName := "911023199714"
+	userName := "911041997445"
 	// 判断当前用户是否有钱
 	if _, ctx, err := registerapi.GeneralAgentRegister(userName); err != nil {
 		logger.LogError("提现登录失败", err)
@@ -39,15 +39,6 @@ func RunWithDrawCase() {
 		allWithdrawChan := make(chan *recoversaasbalance.AllWithdraw, 1)
 		userIdChan := make(chan int, 1)
 		wg.Add(3)
-		go func(ctx *context.Context, ch chan<- *float64) {
-			defer wg.Done()
-			if _, amount, err := recoversaasbalance.RecoverSaasBalance(ctx); err != nil {
-				logger.LogError("提现获取用户金额失败", err)
-				return
-			} else {
-				ch <- &amount
-			}
-		}(deskToken, moneyChan)
 		go func(ctx *context.Context, ch chan<- *recoversaasbalance.AllWithdraw) {
 			defer wg.Done()
 			if _, allWithdraw, err := recoversaasbalance.GetWithdrawBasicInfo(ctx); err != nil {
@@ -67,8 +58,17 @@ func RunWithDrawCase() {
 				ch <- userInfo.UserID
 			}
 		}(deskToken, userIdChan)
+		func(ctx *context.Context, ch chan<- *float64) {
+			defer wg.Done()
+			if _, amount, err := recoversaasbalance.RecoverSaasBalance(ctx); err != nil {
+				logger.LogError("提现获取用户金额失败", err)
+				return
+			} else {
+				ch <- &amount
+			}
+		}(deskToken, moneyChan)
 		wg.Wait()
-		time.Sleep(time.Second)
+		time.Sleep(time.Second * 2)
 		// 进行提现信息的绑定
 		userid := <-userIdChan
 		addwallet.RunAddWallet(strconv.Itoa(userid))
