@@ -99,7 +99,7 @@ func PostRequestCofig(payload map[string]interface{}, base_url, api string, args
 	req.Header.Set(
 		"User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
 	)
-	req.Header.Set("Content-Type", "application/problem+json; charset=UTF-8")
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json, text/plain, */*")
 	req.Header.Set("Connection", "keep-alive")
 	client := checkHttp2()

@@ -47,7 +47,7 @@ func ThirdGameFunc(token, gameCode string) (string, error) {
 	headerStruct := &model.AdminHeaderStruct{}
 	h5_y1 := config.PLANT_H5
 	headerData := []interface{}{h5_y1, h5_y1, h5_y1, token}
-	if resp, _, err := request.PostGenericsFuncFlatten[ThirdGameStruct, model.AdminHeaderStruct](base_url, api, payloadStruct, payloadData, headerStruct, headerData, request.StructToMap, request.AssignSliceToStructMap); err != nil {
+	if resp, _, err := request.PostGenericsFuncFlatten(base_url, api, payloadStruct, payloadData, headerStruct, headerData, request.StructToMap, request.AssignSliceToStructMap); err != nil {
 		logger.LogError("/api/ThirdGame/GetGameUrl报错消息", err)
 		return "", err
 	} else {

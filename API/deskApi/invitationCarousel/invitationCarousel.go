@@ -158,7 +158,7 @@ func RunSpinInvitedWheelWork() error {
 		}
 
 		// 进行注册
-		_, ctxToken, err := registerapi.GeneralAgentRegister(userList[i])
+		_, ctxToken, err := registerapi.NewGeneralAgentRegister(userList[i])
 		if err != nil {
 			logger.Logger.Error("GeneralAgentRegister failed for user", userList[i], "with error:", err)
 			return err
@@ -188,10 +188,10 @@ func RunSpinInvitedWheelWork() error {
 			logger.Logger.Info("Starting NewRound iteration", j, "for user", userList[i])
 			err := NewRound(ctxToken, newRoundCh)
 			if err != nil {
-				logger.Logger.Error("NewRound failed at iteration", j, "for user", userList[i], "with error:", err)
+				logger.Logger.Error("新的一轮启动失败", j, "for user", userList[i], "with error:", err)
 				return err
 			}
-			logger.Logger.Info("Waiting for newRoundCh at iteration", j, "for user", userList[i])
+			logger.Logger.Info("等待新轮次循环", j, "for user", userList[i])
 			<-newRoundCh
 			logger.Logger.Info("Received signal from newRoundCh at iteration", j, "for user", userList[i])
 		}
@@ -322,7 +322,6 @@ func RunTaskWhille(yqCode string, monenyCount float64, ctx *context.Context) {
 		logger.LogError("点击转盘提现失败", errs)
 		return
 	}
-
 }
 
 // 并行邀请人

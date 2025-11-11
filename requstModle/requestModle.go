@@ -25,13 +25,13 @@ payloadFunc 处理payload和payloadData的函数
 *
 */
 func DeskTenAuthorRequest[P any](ctx *context.Context, api string, payload *P, payloadData []any, payloadFunc payloadMapfunc) ([]byte, *http.Response, error) {
-	base_url := config.SIT_WEB_API
+	base_url := config.GoodsDeposit_URL
 	// 请求头的设定
-	header_struct := &model.DeskHeaderAuthorizationStruct{}
-	plant_h5 := config.PLANT_H5
+	header_struct := &model.DeskHeaderAuthorizationStruct2{}
+	plant_h5 := config.GoodsDeposit_URL
 	token := (*ctx).Value(desklogin.DeskAuthTokenKey)
 	//fmt.Println("前台登陆后的token", token)
-	header_list := []interface{}{config.TENANTID, plant_h5, plant_h5, plant_h5, token}
+	header_list := []interface{}{plant_h5, plant_h5, token}
 	if headerMap, err := request.AssignSliceToStructMap(header_struct, header_list); err != nil {
 		return nil, nil, errors.New("failed to convert headerMap struct to map")
 
@@ -67,11 +67,43 @@ payloadFunc 处理payload和payloadData的函数
 *
 */
 func DeskTrodRegRequest[P any](ctx *context.Context, api string, payload *P, payloadData []any, payloadFunc payloadMapfunc) ([]byte, *http.Response, error) {
-	base_url := config.SIT_WEB_API
+	base_url := config.GoodsDeposit_URL
 	// 请求头的设定
-	header_struct := &model.DeskHeaderTenantIdStruct{}
-	plant_h5 := config.PLANT_H5
-	header_list := []interface{}{config.TENANTID, plant_h5, plant_h5, plant_h5}
+	header_struct := &model.DeskHeaderTenantIdStruct2{}
+	plant_h5 := config.GoodsDeposit_URL
+	header_list := []interface{}{plant_h5, plant_h5}
+	if headerMap, err := request.InitStructToMap(header_struct, header_list); err != nil {
+		return nil, nil, errors.New("failed to convert headerMap struct to map")
+
+	} else {
+		// 设置请求体的
+		payloadMap, err := payloadFunc(payload, payloadData)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to convert payloadMap struct to map:%s", err)
+		}
+		//请求体和请求头的map
+		// 将请求体map进行平铺
+		FlattendMap := request.FlattenMap(payloadMap)
+		respBody, req, err := request.PostRequestCofig(FlattendMap, base_url, api, headerMap)
+		if err != nil {
+			return nil, nil, fmt.Errorf("请求失败:%s", err)
+		}
+		var result model.Response
+		err = json.Unmarshal([]byte(string(respBody)), &result)
+		if err != nil {
+			return nil, nil, fmt.Errorf("错误代码反序列化:%s", err)
+		}
+		return respBody, req, nil
+	}
+}
+
+// "https://sit-3003-register.mggametransit.com" 注册的方式
+func DeskTrodRegRequest2[P any](ctx *context.Context, api string, payload *P, payloadData []any, payloadFunc payloadMapfunc) ([]byte, *http.Response, error) {
+	base_url := config.REGISTER_URL
+	// 请求头的设定
+	header_struct := &model.DeskHeaderTenantIdStruct2{}
+	plant_h5 := config.REGISTER_URL
+	header_list := []interface{}{plant_h5, plant_h5}
 	if headerMap, err := request.InitStructToMap(header_struct, header_list); err != nil {
 		return nil, nil, errors.New("failed to convert headerMap struct to map")
 

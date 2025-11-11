@@ -10,7 +10,7 @@ const (
 	PLANT_H5              = "https://sit-plath5-y1.mggametransit.com"        // y1前台地址 包括domain refer
 	WMG_H5                = "https://h5.wmgametransit.com"                   // y1彩票投注相关的请求头地址
 	LOTTERY_H5            = "https://sit-lotteryh5.wmgametransit.com"        // y1彩票投注相关的请求体地址
-	GoodsDeposit_URL      = "https://mggametransit.com/"                     // 充值相关的returenUrl链接
+	GoodsDeposit_URL      = "https://mggametransit.com"                      // 充值相关的returenUrl链接
 	TENANTID              = "3003"                                           // h5的商户id
 	Log_Level             = "INFO"                                           // 设置日志等级
 	MAXWaitTIME           = time.Second * 2                                  // 最大等待时间

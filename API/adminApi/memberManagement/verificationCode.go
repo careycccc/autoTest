@@ -26,22 +26,24 @@ type SendVerifiyCodeStruct struct {
 需要传入上下文，手机号码
 返回 响应结果，以及错误信息
 发送验证码
+codeType 验证码类型 18是登录验证 1是注册验证
 *
 */
-func SendVerificationCode(userName string, ch chan struct{}) (*model.BetResponse, error) {
+func SendVerificationCode(userName string, codeType int8, ch chan struct{}) (*model.BetResponse, error) {
 	defer func() {
 		time.Sleep(time.Second)
 		ch <- struct{}{}
 	}()
 	api := "/api/Home/SendVerifiyCode"
-	base_url := config.SIT_WEB_API
+	base_url := config.GoodsDeposit_URL
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &SendVerifiyCodeStruct{}
-	payloadList := []interface{}{1, userName, 18, random, language, "", timestamp}
-	headerStruct := &model.DeskHeaderTenantIdStruct{}
-	plant_h5 := config.PLANT_H5
-	heaerList := []interface{}{config.TENANTID, plant_h5, plant_h5, plant_h5}
-	if respBoy, _, err := request.PostGenericsFuncFlatten[SendVerifiyCodeStruct, model.DeskHeaderTenantIdStruct](base_url, api, payloadStruct, payloadList, headerStruct, heaerList, request.StructToMap, request.InitStructToMap); err != nil {
+	payloadList := []interface{}{1, userName, codeType, random, language, "", timestamp}
+	headerStruct := &model.DeskHeaderTenantIdStruct2{}
+	plant_h5 := config.REGISTER_URL
+	// heaerList := []interface{}{config.TENANTID, plant_h5, plant_h5, plant_h5}
+	heaerList := []interface{}{plant_h5, plant_h5}
+	if respBoy, _, err := request.PostGenericsFuncFlatten(base_url, api, payloadStruct, payloadList, headerStruct, heaerList, request.StructToMap, request.InitStructToMap); err != nil {
 		errs := fmt.Errorf("/api/Home/SendVerifiyCode发送请求失败%s", err)
 		return model.HandlerErrorRes2(errs), err
 	} else {
@@ -107,7 +109,7 @@ func GetVerificationCode(ctx *context.Context, userName string) (*model.Response
 	payloadStruct := &QueryTifyStruct{}
 	timestamp, random, language := request.GetTimeRandom()
 	payloadList := []interface{}{userName, 1, 20, "Desc", random, language, "", timestamp}
-	if respBoy, _, err := requstmodle.AdminRodAutRequest[QueryTifyStruct](ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
+	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetVerifyCodePageList的请求失败", err)), "", err
 	} else {
 		var tifyResponse TifyResponse
@@ -130,10 +132,11 @@ func GetVerificationCode(ctx *context.Context, userName string) (*model.Response
 }
 
 // 发送要验证码到接收验证码
-func SendToGetVerCode(ctx *context.Context, userName string) (*model.Response, string, error) {
+// codeType 验证码类型 18是登录验证 1是注册验证
+func SendToGetVerCode(ctx *context.Context, codeType int8, userName string) (*model.Response, string, error) {
 	ch := make(chan struct{}, 1)
 	// 1.发送验证码
-	SendVerificationCode(userName, ch)
+	SendVerificationCode(userName, codeType, ch)
 	// 2.获取验证码
 	// 2.1需要后端登录
 	if resp, ctxToken, err := login.AdminSitLogin(ctx); err != nil {

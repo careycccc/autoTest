@@ -33,7 +33,7 @@ func MobileAutoLoginFunc(userName string) (*model.BetResponse, context.Context, 
 	// 发送验证码
 	// 获取验证码
 	ctx := context.Background()
-	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, userName); err != nil {
+	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 18, userName); err != nil {
 		return model.ResponseToBetResponse(res), nil, err
 	} else {
 		registerFingerprint := utils.GenerateCryptoRandomString(32)
@@ -41,7 +41,7 @@ func MobileAutoLoginFunc(userName string) (*model.BetResponse, context.Context, 
 		payloadList := []interface{}{userName, verifyCode, "", registerFingerprint, "", "", "", random, language, "", timestamp}
 		// payload的构建
 		payloadStruct := &MobileAutoLoginStruct{}
-		if repBoy, _, err := requstmodle.DeskTrodRegRequest[MobileAutoLoginStruct](&ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
+		if repBoy, _, err := requstmodle.DeskTrodRegRequest2(&ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 			return model.HandlerErrorRes2(model.ErrorLoggerType("/api/Home/MobileAutoLogin登录/注册请求失败", err)), nil, err
 		} else {
 			// 还需要解析出token进行保存
@@ -86,7 +86,7 @@ func RegisterMobileLoginFunc(userName, invitationCode string) (*model.BetRespons
 	// 发送验证码
 	// 获取验证码
 	ctx := context.Background()
-	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, userName); err != nil {
+	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 18, userName); err != nil {
 		return model.ResponseToBetResponse(res), nil, err
 	} else {
 		registerFingerprint := utils.GenerateCryptoRandomString(32)
@@ -94,7 +94,7 @@ func RegisterMobileLoginFunc(userName, invitationCode string) (*model.BetRespons
 		// payload的构建
 		payloadStruct := &RegisterStruct{}
 		payloadList := []interface{}{userName, verifyCode, invitationCode, registerFingerprint, Track{IsTrusted: true, Vts: timestamp}, language, random, "", timestamp}
-		if repBoy, _, err := requstmodle.DeskTrodRegRequest[RegisterStruct](&ctx, api, payloadStruct, payloadList, request.InitStructToMap); err != nil {
+		if repBoy, _, err := requstmodle.DeskTrodRegRequest2(&ctx, api, payloadStruct, payloadList, request.InitStructToMap); err != nil {
 			return model.HandlerErrorRes2(model.ErrorLoggerType("/api/Home/MobileAutoLogin登录/注册请求失败", err)), nil, err
 		} else {
 			// 解析tokne并进行保存

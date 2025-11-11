@@ -4,6 +4,7 @@ import (
 	membermanagement "autoTest/API/adminApi/memberManagement"
 	login "autoTest/API/deskApi/loginApi"
 	requstmodle "autoTest/requstModle"
+	"autoTest/store/config"
 	"autoTest/store/model"
 	"autoTest/store/request"
 	"autoTest/store/utils"
@@ -28,7 +29,7 @@ func GeneralAgentRegister(userName string) (*model.Response, *context.Context, e
 	api := "/api/Home/MobileAutoLogin"
 	// 发送验证码，获取验证码
 	ctx := context.Background()
-	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, userName); err != nil {
+	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 18, userName); err != nil {
 		return res, nil, err
 	} else {
 		// 随机浏览器指纹
@@ -54,4 +55,46 @@ func GeneralAgentRegister(userName string) (*model.Response, *context.Context, e
 			}
 		}
 	}
+}
+
+type LoginRequest struct {
+	UserName    string `json:"userName"`
+	Password    string `json:"password"`
+	Code        string `json:"code"`
+	LoginType   string `json:"loginType"`
+	DeviceID    string `json:"deviceId"`
+	BrowserID   string `json:"browserId"`
+	PackageName string `json:"packageName"`
+	model.BaseStruct
+}
+
+// 填写密码的方式进行注册
+func NewGeneralAgentRegister(userName string) (*model.Response, *context.Context, error) {
+	// 发送验证码，获取验证码
+	ctx := context.Background()
+	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 1, userName); err != nil {
+		return res, nil, err
+	} else {
+		api := "/api/Home/Register"
+		payloadStruct := &LoginRequest{}
+		browserId := utils.GenerateCryptoRandomString(32)
+		timestamp, random, language := request.GetTimeRandom()
+		payloadList := []interface{}{userName, config.SUB_PWD, verifyCode, "Mobile", "", browserId, "", random, language, "", timestamp}
+		if respBody, _, err := requstmodle.DeskTrodRegRequest(&ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/Register请求失败", err)), nil, err
+		} else {
+			// 解析token出来
+			token, err := model.GetJsonToken(string(respBody))
+			if err != nil {
+				return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/Register,token获取token失败", err)), nil, err
+			}
+			ctxToken := context.WithValue(ctx, login.DeskAuthTokenKey, token)
+			if resp, err := model.ParseResponse(respBody); err != nil {
+				return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/Register解析失败", err)), nil, err
+			} else {
+				return resp, &ctxToken, nil
+			}
+		}
+	}
+
 }

@@ -23,12 +23,23 @@ type DeskHeaderTenantIdStruct struct {
 	Domainurl any
 }
 
+type DeskHeaderTenantIdStruct2 struct {
+	//TenantId any
+	Referer any
+	Origin  any
+}
+
 // 请求头的结构体Authorization 和 TenantId
 type DeskHeaderAuthorizationStruct struct {
 	TenantId      any
 	Referer       any
 	Origin        any
 	Domainurl     any
+	Authorization any
+}
+type DeskHeaderAuthorizationStruct2 struct {
+	Referer       any
+	Origin        any
 	Authorization any
 }
 

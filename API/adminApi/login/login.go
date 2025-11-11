@@ -30,7 +30,7 @@ func AdminSitLogin(ctx *context.Context) (*model.Response, *context.Context, err
 	headerStruct := &model.BaseHeaderStruct{}
 	headerUrl := config.ADMIN_SYSTEM_URL
 	headerList := []interface{}{headerUrl, headerUrl, headerUrl}
-	if respBody, _, err := request.PostGenericsFuncFlatten[AdminLogin, model.BaseHeaderStruct](headerUrl, api, playStruct, playList, headerStruct, headerList, request.StructToMap, request.InitStructToMap); err != nil {
+	if respBody, _, err := request.PostGenericsFuncFlatten(headerUrl, api, playStruct, playList, headerStruct, headerList, request.StructToMap, request.InitStructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/Login 请求失败", err)), nil, err
 	} else {
 		token, err := model.GetJsonToken(string(respBody))
