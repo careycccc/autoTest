@@ -1,7 +1,7 @@
 package main
 
 import (
-	invitecode "autoTest/API/deskApi/inviteCode"
+	GameBetOrders "autoTest/API/adminApi/GameManagement/GameBettingOrders"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -30,8 +30,8 @@ func main() {
 	// 	return
 	// }
 	// invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
-	invitecode.RunInvite() // 多级下级邀请
+	// invitecode.RunInvite() // 多级下级邀请
 	// withdrawcash.RunWithDrawCase() // 提现
 	// topup.RunRechargeGoods()
-
+	GameBetOrders.RunGameBetOrders() // 后台投注订单的查询
 }

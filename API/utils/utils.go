@@ -139,3 +139,24 @@ func WriteExcelFromSlice(dataSlice [][]interface{}, sourcePath string) (*exceliz
 	fNew.SetColWidth(newSheet, "A", fmt.Sprintf("%c", lastCol), 15)
 	return fNew, nil
 }
+
+// GetTodayStartAndEnd 返回今天 00:00:00 和 23:59:59 的毫秒时间戳（基于 +08 时区）
+func GetTodayStartAndEnd() (int64, int64) {
+	// 使用 +08 时区（Asia/Singapore）
+	location := time.FixedZone("Asia/Singapore", 8*60*60)
+
+	// 获取当前时间并加载到 +08 时区
+	now := time.Now().In(location)
+
+	// 提取年月日
+	year, month, day := now.Date()
+
+	// 构造当天的 00:00:00
+	start := time.Date(year, month, day, 0, 0, 0, 0, location)
+
+	// 构造当天的 23:59:59
+	end := time.Date(year, month, day, 23, 59, 59, 999999999, location) // 精确到纳秒，接近 23:59:59.999...
+
+	// 转换为毫秒时间戳
+	return start.UnixMilli(), end.UnixMilli()
+}
