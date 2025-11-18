@@ -4,6 +4,7 @@ import (
 	"autoTest/store/config"
 	"autoTest/store/logger"
 	"bufio"
+	"bytes"
 	"crypto/md5"
 	"encoding/binary"
 	"encoding/hex"
@@ -53,14 +54,28 @@ func GetSignature(body map[string]interface{}, verifyPwd *string) string {
 			}
 		}
 	}
-
+	//第一版写法，如果有错误就改成这个
 	// 转换为 JSON 字符串
-	jsonData, err := json.Marshal(filteredObj)
-	if err != nil {
-		return "" // 错误处理，可根据需求调整
-	}
+	// jsonData, err := json.Marshal(filteredObj)
+	// if err != nil {
+	// 	return "" // 错误处理，可根据需求调整
+	// }
 
+	// encoder := string(jsonData)
+	// 最优雅的写法（推荐你改成这个）：
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false) // 关键！关闭 HTML 转义
+	if err := enc.Encode(filteredObj); err != nil {
+		logger.Logger.Error("JSON 编码失败", "error", err)
+		return ""
+	}
+	jsonData := buf.Bytes()
+	if jsonData[len(jsonData)-1] == '\n' { // Encode 会多加一个换行
+		jsonData = jsonData[:len(jsonData)-1]
+	}
 	encoder := string(jsonData)
+
 	if verifyPwd != nil {
 		encoder += *verifyPwd
 	}

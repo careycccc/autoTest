@@ -315,13 +315,13 @@ func RunTaskWhille(yqCode string, monenyCount float64, ctx *context.Context) {
 	}
 	logger.Logger.Info("当前用户的转盘总额", moneny)
 	// 还差提现金额的获取
-	time.Sleep(time.Second * 5)
-	_, errs := ClickWheelWithdrawFunc(moneny, ctx) // 点击转盘提现
-	if errs != nil {
-		//fmt.Println("点击转盘提现失败", err)
-		logger.LogError("点击转盘提现失败", errs)
-		return
-	}
+	// time.Sleep(time.Second * 5)
+	// _, errs := ClickWheelWithdrawFunc(moneny, ctx) // 点击转盘提现
+	// if errs != nil {
+	// 	//fmt.Println("点击转盘提现失败", err)
+	// 	logger.LogError("点击转盘提现失败", errs)
+	// 	return
+	// }
 }
 
 // 并行邀请人

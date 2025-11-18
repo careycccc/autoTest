@@ -51,6 +51,7 @@ func ThirdGameFunc(token, gameCode string) (string, error) {
 		logger.LogError("/api/ThirdGame/GetGameUrl报错消息", err)
 		return "", err
 	} else {
+		//logger.Logger.Info("/api/ThirdGame/GetGameUrl响应结果", "result", string(resp))
 		var response Response
 		err = json.Unmarshal([]byte(string(resp)), &response)
 		if err != nil {
@@ -58,7 +59,6 @@ func ThirdGameFunc(token, gameCode string) (string, error) {
 			return "", err
 		}
 		result := response.Data.(map[string]interface{})["url"]
-		// fmt.Println(result)
 		// 寻找token
 		// 查找第一个匹配
 		res := result.(string)

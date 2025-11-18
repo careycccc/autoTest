@@ -32,11 +32,10 @@ func LoginY1(ctx context.Context, username, password string) (*model.Response, *
 	browserid := utils.GenerateCryptoRandomString(32)
 	timestamp, random, language := request.GetTimeRandom()
 	payloadList := []interface{}{username, password, "Mobile", "", browserid, "", random, language, "", timestamp}
-	header_url := config.PLANT_H5
-	base_url := config.SIT_WEB_API
-	headerStruct := &model.DeskHeaderTenantIdStruct{}
-	headerList := []interface{}{"3003", header_url, header_url, header_url}
-	respBody, _, err := request.PostGenericsFuncFlatten[userloginY1, model.DeskHeaderTenantIdStruct](base_url, api, payloadStruct, payloadList, headerStruct, headerList, request.StructToMap, request.InitStructToMap)
+	url := config.GoodsDeposit_URL
+	headerStruct := &model.DeskHeaderTenantIdStruct2{}
+	headerList := []interface{}{url, url}
+	respBody, _, err := request.PostGenericsFuncFlatten(url, api, payloadStruct, payloadList, headerStruct, headerList, request.StructToMap, request.InitStructToMap)
 	if err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/Login 请求失败", err)), nil, err
 	}

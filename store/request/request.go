@@ -80,7 +80,6 @@ func PostRequestCofig(payload map[string]interface{}, base_url, api string, args
 		// fmt.Println("utils的签名是空的", signature)
 		return nil, nil, errors.New("utils的签名是空的")
 	}
-
 	payload["signature"] = signature
 	//将请求数据转换成json
 	body, err := json.Marshal(payload)

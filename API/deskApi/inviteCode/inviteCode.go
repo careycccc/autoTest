@@ -249,7 +249,7 @@ func RunInvite() {
 		return
 	}
 
-	subordinates := []int{2, 3, 3, 2} // 第1层2人，第2层3人
+	subordinates := []int{6, 5, 6} // 第1层2人，第2层3人
 	userDB = make(map[string]*User)
 	fmt.Printf("🎯 开始绑定到总代: %s, 层级: %v\n", inviteCode, subordinates)
 

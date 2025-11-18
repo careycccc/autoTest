@@ -1,7 +1,7 @@
 package main
 
 import (
-	GameBetOrders "autoTest/API/adminApi/GameManagement/GameBettingOrders"
+	chickenroadgame "autoTest/API/betApi/threeGameApi/ChickenRoadGame"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -29,9 +29,11 @@ func main() {
 	// 	logger.LogError("登录失败", err)
 	// 	return
 	// }
-	// invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
+	//invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
 	// invitecode.RunInvite() // 多级下级邀请
 	// withdrawcash.RunWithDrawCase() // 提现
 	// topup.RunRechargeGoods()
-	GameBetOrders.RunGameBetOrders() // 后台投注订单的查询
+	// GameBetOrders.RunGameBetOrders()              // 后台投注订单的查询
+	// platformreports.RunGetPlatRptStatisticPageList() // 平台报表-> 每日汇总报表
+	chickenroadgame.RunChickenRoadGame() // 鸡路小游戏
 }

@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	"strconv"
 	"sync"
 	"time"
 
@@ -159,4 +160,28 @@ func GetTodayStartAndEnd() (int64, int64) {
 
 	// 转换为毫秒时间戳
 	return start.UnixMilli(), end.UnixMilli()
+}
+
+// 将浮点数保留2位小数 四舍五入
+func Rounding(num float64) float64 {
+	formattedNum := fmt.Sprintf("%.2f", num)
+	// 将字符串转成float64
+	result, _ := strconv.ParseFloat(formattedNum, 64)
+	return result
+}
+
+// GetDayStartEnd 返回当天的开始时间（00:00:00）和结束时间（23:59:59）
+// 格式为：2006-01-02 15:04:05
+func GetDayStartEnd() (string, string) {
+	// 获取当前时间
+	now := time.Now()
+
+	// 当天零点（开始时间）
+	start := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	// 当天 23:59:59（结束时间）
+	end := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 0, now.Location())
+
+	// 格式化输出
+	const layout = "2006-01-02 15:04:05"
+	return start.Format(layout), end.Format(layout)
 }

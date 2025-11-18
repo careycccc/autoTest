@@ -13,6 +13,14 @@ import (
 	"sync"
 )
 
+var (
+	BetAmountSumf   = 0.0 // 投注金额
+	ValidAmountSumf = 0.0 // 有效投注
+	WinAmountSumf   = 0.0 // 派奖
+	WinLoseAmountf  = 0.0 // 盈亏
+	FeeAmountSumf   = 0.0 // 手续费
+)
+
 // 游戏投注订单
 type QueryBetRecordPageList struct {
 	QueryTimeType string `json:"queryTimeType"`
@@ -65,14 +73,14 @@ func QueryGameBetOrders(ctx *context.Context, categoryType int8, startTime, endT
 	// 临时处理总条数为2000条
 	payloadList := []interface{}{sortField, categoryType, startTime, endTime, sortField, 1, 2000, "Desc", random, language, "", timestamp}
 	if respBody, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
-		return model.HandlerErrorRes(model.ErrorLoggerType("", err)), &BetRecordPageList{}, err
+		return model.HandlerErrorRes(model.ErrorLoggerType("api/ThirdGame/GetBetRecordPageList请求失败", err)), &BetRecordPageList{}, err
 	} else {
 		var sumResponse SumResponse
 		if err := json.Unmarshal(respBody, &sumResponse); err != nil {
-			return model.HandlerErrorRes(model.ErrorLoggerType("", err)), &BetRecordPageList{}, err
+			return model.HandlerErrorRes(model.ErrorLoggerType("api/ThirdGame/GetBetRecordPageList【sumResponse解析失败】", err)), &BetRecordPageList{}, err
 		}
 		if resp, err := model.ParseResponse(respBody); err != nil {
-			return model.HandlerErrorRes(model.ErrorLoggerType("", err)), &BetRecordPageList{}, err
+			return model.HandlerErrorRes(model.ErrorLoggerType("api/ThirdGame/GetBetRecordPageList 解析失败", err)), &BetRecordPageList{}, err
 		} else {
 			// 获取用户id列表
 			userIdList := make([]int, len(sumResponse.Data.List))
@@ -158,7 +166,12 @@ func AnalysisBetRecordPageList(ch <-chan *GameBetOrders) {
 	}
 	// 计算总人数
 	list := GameOrderPersonNumber(totalUserList)
-	logger.Logger.Info("总计", "\n", "投注金额:", BetAmountSum, "\n", "有效投注:", ValidAmountSum, "\n", "派奖金额:", WinAmountSum, "\n", "盈亏:", WinLoseAmount, "\n", "手续费:", FeeAmountSum, "\n", "游戏人数:", len(list))
+	BetAmountSumf = utils.Rounding(BetAmountSum)
+	ValidAmountSumf = utils.Rounding(ValidAmountSum)
+	WinAmountSumf = utils.Rounding(WinAmountSum)
+	WinLoseAmountf = utils.Rounding(WinLoseAmount)
+	FeeAmountSumf = utils.Rounding(FeeAmountSum)
+	logger.Logger.Info("总计", "\n", "投注金额:", BetAmountSumf, "\n", "有效投注:", ValidAmountSumf, "\n", "派奖金额:", WinAmountSumf, "\n", "盈亏:", WinLoseAmountf, "\n", "手续费:", FeeAmountSumf, "\n", "游戏人数:", len(list))
 }
 
 // 计算单个游戏大类的人数
