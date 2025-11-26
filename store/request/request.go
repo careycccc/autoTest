@@ -68,7 +68,7 @@ args[0] 添加自定义请求头 map[string]interface{}
 */
 func PostRequestCofig(payload map[string]interface{}, base_url, api string, args ...map[string]interface{}) ([]byte, *http.Response, error) {
 	url := base_url + api
-	// fmt.Printf("本次请求的地址%v\n", url)
+	//fmt.Printf("本次请求的地址%v\n", url)
 	// 判断传进来的paylaod是否有签名，没有就添加上
 	_, exists := payload["signature"]
 	if !exists {
@@ -157,7 +157,7 @@ func setGetParms(params *url.Values, paramsMap map[string]interface{}) url.Value
 
 // 响应码的处理
 func handlerCode(resp *http.Response) ([]byte, *http.Response, error) {
-	if resp.StatusCode == 200 {
+	if resp.StatusCode == 200 || resp.StatusCode == 201 {
 		//获取相应的内容
 		respBody, err := io.ReadAll(resp.Body)
 		if err != nil {

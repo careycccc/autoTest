@@ -1,7 +1,6 @@
 package withdrawcash
 
 import (
-	withdrawalorders "autoTest/API/adminApi/financialManagement/withdrawalOrders"
 	addwallet "autoTest/API/adminApi/memberList/addWallet"
 	recoversaasbalance "autoTest/API/deskApi/WithdrawCash/RecoverSaasBalance"
 	getuserinfo "autoTest/API/deskApi/getUserinfo"
@@ -13,9 +12,9 @@ import (
 	"autoTest/store/request"
 	"autoTest/store/utils"
 	"context"
+	"fmt"
 	"strconv"
 	"sync"
-	"time"
 )
 
 // 后台提现的结构体
@@ -25,77 +24,162 @@ type withDrawaInfo struct {
 }
 
 // 提现
+// func RunWithDrawCase() {
+// 	// 用户的手机号码
+// 	userName := "918320694617"
+// 	// 判断当前用户是否有钱
+// 	if _, ctx, err := registerapi.GeneralAgentRegister(userName); err != nil {
+// 		logger.LogError("提现登录失败", err)
+// 		return
+// 	} else {
+// 		deskToken := ctx
+// 		wg := &sync.WaitGroup{}
+// 		moneyChan := make(chan *float64, 1)
+// 		allWithdrawChan := make(chan *recoversaasbalance.AllWithdraw, 1)
+// 		userIdChan := make(chan int, 1)
+// 		wg.Add(3)
+// 		go func(ctx *context.Context, ch chan<- *recoversaasbalance.AllWithdraw) {
+// 			defer wg.Done()
+// 			if _, allWithdraw, err := recoversaasbalance.GetWithdrawBasicInfo(ctx); err != nil {
+// 				logger.LogError("提现获取用户金额失败", err)
+// 				return
+// 			} else {
+// 				ch <- allWithdraw
+// 			}
+// 		}(deskToken, allWithdrawChan)
+// 		go func(ctx *context.Context, ch chan<- int) {
+// 			defer wg.Done()
+// 			// 获取当前会员的会员id
+// 			if _, userInfo, err := getuserinfo.GetUserInfo(ctx); err != nil {
+// 				logger.LogError("获取用户信息失败", err)
+// 				return
+// 			} else {
+// 				ch <- userInfo.UserID
+// 			}
+// 		}(deskToken, userIdChan)
+// 		func(ctx *context.Context, ch chan<- *float64) {
+// 			defer wg.Done()
+// 			if _, amount, err := recoversaasbalance.RecoverSaasBalance(ctx); err != nil {
+// 				logger.LogError("提现获取用户金额失败", err)
+// 				return
+// 			} else {
+// 				ch <- &amount
+// 			}
+// 		}(deskToken, moneyChan)
+// 		wg.Wait()
+// 		time.Sleep(time.Second * 2)
+// 		// 进行提现信息的绑定
+// 		userid := <-userIdChan
+// 		go addwallet.RunAddWallet(strconv.Itoa(userid))
+// 		// 设置提现密码
+// 		_, err := SetWithdrawPasswordApi(deskToken)
+// 		if err != nil {
+// 			logger.LogError("提现密码设置失败", err)
+// 			return
+// 		}
+// 		withDrawaChan := make(chan *withDrawaInfo, 1)
+// 		WithDrawCase(deskToken, <-moneyChan, <-allWithdrawChan, withDrawaChan)
+// 		withDrawa := <-withDrawaChan
+// 		logger.Logger.Info("提现金额", withDrawa.withDrawaAmont)
+// 		// 后台进行订单的处理
+// 		withdrawalorders.RunWithdraw(userid, withDrawa.withDrawaType, withDrawa.withDrawaAmont, withDrawa.withDrawaAmont)
+// 	}
+// }
+
 func RunWithDrawCase() {
-	// 用户的手机号码
-	userName := "911041997445"
-	// 判断当前用户是否有钱
-	if _, ctx, err := registerapi.GeneralAgentRegister(userName); err != nil {
+	userName := "912025202140"
+
+	_, deskCtx, err := registerapi.GeneralAgentRegister(userName)
+	if err != nil {
 		logger.LogError("提现登录失败", err)
 		return
-	} else {
-		deskToken := ctx
-		wg := &sync.WaitGroup{}
-		moneyChan := make(chan *float64, 1)
-		allWithdrawChan := make(chan *recoversaasbalance.AllWithdraw, 1)
-		userIdChan := make(chan int, 1)
-		wg.Add(3)
-		go func(ctx *context.Context, ch chan<- *recoversaasbalance.AllWithdraw) {
-			defer wg.Done()
-			if _, allWithdraw, err := recoversaasbalance.GetWithdrawBasicInfo(ctx); err != nil {
-				logger.LogError("提现获取用户金额失败", err)
-				return
-			} else {
-				ch <- allWithdraw
-			}
-		}(deskToken, allWithdrawChan)
-		go func(ctx *context.Context, ch chan<- int) {
-			defer wg.Done()
-			// 获取当前会员的会员id
-			if _, userInfo, err := getuserinfo.GetUserInfo(ctx); err != nil {
-				logger.LogError("获取用户信息失败", err)
-				return
-			} else {
-				ch <- userInfo.UserID
-			}
-		}(deskToken, userIdChan)
-		func(ctx *context.Context, ch chan<- *float64) {
-			defer wg.Done()
-			if _, amount, err := recoversaasbalance.RecoverSaasBalance(ctx); err != nil {
-				logger.LogError("提现获取用户金额失败", err)
-				return
-			} else {
-				ch <- &amount
-			}
-		}(deskToken, moneyChan)
-		wg.Wait()
-		time.Sleep(time.Second * 2)
-		// 进行提现信息的绑定
-		userid := <-userIdChan
-		addwallet.RunAddWallet(strconv.Itoa(userid))
-		// 设置提现密码
-		_, err := SetWithdrawPasswordApi(deskToken)
-		if err != nil {
-			logger.LogError("提现密码设置失败", err)
-			return
-		}
-		withDrawaChan := make(chan *withDrawaInfo, 1)
-		WithDrawCase(deskToken, <-moneyChan, <-allWithdrawChan, withDrawaChan)
-		withDrawa := <-withDrawaChan
-		logger.Logger.Info("提现金额", withDrawa.withDrawaAmont)
-		// 后台进行订单的处理
-		withdrawalorders.RunWithdraw(userid, withDrawa.withDrawaType, withDrawa.withDrawaAmont, withDrawa.withDrawaAmont)
 	}
+	if deskCtx == nil {
+		logger.LogError("提现登录返回空 context", nil)
+		return
+	}
+
+	// 三个 channel
+	moneyChan := make(chan *float64, 1)
+	allWithdrawChan := make(chan *recoversaasbalance.AllWithdraw, 1)
+	userIdChan := make(chan int, 1)
+
+	var wg sync.WaitGroup
+	wg.Add(3)
+
+	// 全部改成真正的 goroutine（关键！）
+	go func() {
+		defer wg.Done()
+		if _, allWithdraw, err := recoversaasbalance.GetWithdrawBasicInfo(deskCtx); err != nil {
+			logger.LogError("获取提现基础信息失败", err)
+			return
+		} else {
+
+			allWithdrawChan <- allWithdraw
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if _, userInfo, err := getuserinfo.GetUserInfo(deskCtx); err != nil {
+			logger.LogError("获取用户信息失败", err)
+			return
+		} else {
+			userIdChan <- userInfo.UserID
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if _, amount, err := recoversaasbalance.RecoverSaasBalance(deskCtx); err != nil {
+			logger.LogError("恢复余额失败", err)
+			return
+		} else {
+
+			moneyChan <- &amount
+		}
+	}()
+
+	wg.Wait() // 现在这三个是真的并行，最慢的决定时间
+
+	// 获取用户ID
+	userid := <-userIdChan
+
+	// 添加钱包后台异步执行（不阻塞！）
+	addwallet.RunAddWallet(strconv.Itoa(userid))
+
+	// 设置提现密码（同步执行，没问题）
+	if _, err := SetWithdrawPasswordApi(deskCtx); err != nil {
+		logger.LogError("设置提现密码失败", err)
+		return
+	} else {
+		// 提现逻辑
+		withDrawaChan := make(chan *withDrawaInfo, 1)
+		WithDrawCase(deskCtx, <-moneyChan, <-allWithdrawChan, withDrawaChan)
+		//withDrawa := <-withDrawaChan
+		// 下单
+		//withdrawalorders.RunWithdraw(userid, withDrawa.withDrawaType, withDrawa.withDrawaAmont, withDrawa.withDrawaAmont)
+	}
+
 }
 
 // 提现
 func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaasbalance.AllWithdraw, ch chan<- *withDrawaInfo) {
 	// 判断用户是否有钱，每日提现金额是否有值，提现是否有次数，打码量是否满足
 	if *money <= 0.0 {
-		logger.LogError("提现获取用户金额小于等于0", nil)
+		logger.Logger.Warnln("提现获取用户金额小于等于0", nil)
+		ch <- &withDrawaInfo{
+			withDrawaAmont: 0,
+			withDrawaType:  "",
+		}
 		return
 	}
-	if allwithdraw.UserTodayWithdrawCount <= 0 || allwithdraw.UserTodayWithdrawFreeCount != 0 {
-		logger.LogError("用户的提现次数小于等于0,或者 用户的打码量不等于0", nil)
+	if allwithdraw.UserTodayWithdrawCount == 0 || allwithdraw.AmountCoding != 0 {
+		logger.Logger.Warn("用户的提现次数等于0,或者 用户的打码量不等于0", nil)
+		ch <- &withDrawaInfo{
+			withDrawaAmont: 0,
+			withDrawaType:  "",
+		}
 		return
 	}
 	// 要保证提现金额要有大于整个提现list里面的值
@@ -112,6 +196,7 @@ PT:
 	WithdrawCategoryListLen := len(allwithdraw.WithdrawCategoryList)
 PT2:
 	j := utils.RandInt(0, WithdrawCategoryListLen-1)
+	fmt.Println("随机出来的提现大类", allwithdraw.WithdrawCategoryList[j].WithdrawType)
 	if allwithdraw.WithdrawCategoryList[j].WithdrawType == "UPI" {
 		// 提现类型目前不支持upi
 		goto PT2
@@ -126,6 +211,7 @@ PT2:
 	} else {
 		logger.Logger.Info("提现结果", resp)
 	}
+
 	ch <- &withDrawaInfo{
 		withDrawaAmont: canWithDrawCaseList[i],
 		withDrawaType:  withdrawType,

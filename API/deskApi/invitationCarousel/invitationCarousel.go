@@ -114,7 +114,7 @@ func ClickSpinningTurntable(ctx *context.Context) (*model.Response, float64, boo
 
 // 运行邀请转盘
 func RunSpinInvitedWheel() error {
-	userName := "911006976778"
+	userName := "911120199711"
 	if ctx, err := login.ReturnContextLoginY1(userName, "qwer1234"); err != nil {
 		return err
 	} else {

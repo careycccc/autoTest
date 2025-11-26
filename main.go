@@ -1,7 +1,7 @@
 package main
 
 import (
-	chickenroadgame "autoTest/API/betApi/threeGameApi/ChickenRoadGame"
+	withdrawcash "autoTest/API/deskApi/WithdrawCash"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -29,11 +29,12 @@ func main() {
 	// 	logger.LogError("登录失败", err)
 	// 	return
 	// }
-	//invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
+	// invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
+	// invitationcarousel.RunSpinInvitedWheel() // 当前用户邀请转盘自动邀请下级
 	// invitecode.RunInvite() // 多级下级邀请
-	// withdrawcash.RunWithDrawCase() // 提现
+	withdrawcash.RunWithDrawCase() // 提现
 	// topup.RunRechargeGoods()
 	// GameBetOrders.RunGameBetOrders()              // 后台投注订单的查询
 	// platformreports.RunGetPlatRptStatisticPageList() // 平台报表-> 每日汇总报表
-	chickenroadgame.RunChickenRoadGame() // 鸡路小游戏
+	// chickenroadgame.RunChickenRoadGame() // 鸡路小游戏
 }

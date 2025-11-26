@@ -36,8 +36,9 @@ type WithdrawBasicInfoResp struct {
 		FixedWithdrawAmountList    []float64          `json:"fixedWithdrawAmountList"`    // 提现的金额的list表
 		UserTodayWithdrawAmount    float64            `json:"userTodayWithdrawAmount"`    // 今日可提现的总金额
 		UserTodayWithdrawCount     int                `json:"userTodayWithdrawCount"`     // 今日可提现的总次数
-		UserTodayWithdrawFreeCount float64            `json:"userTodayWithdrawFreeCount"` // 打码量
-		WithdrawCategoryList       []WithdrawCategory `json:"withdrawCategoryList"`       // 提现大类
+		UserTodayWithdrawFreeCount float64            `json:"userTodayWithdrawFreeCount"` // 今日可提现的免手续费次数
+		WithdrawCategoryList       []WithdrawCategory `json:"withdrawCategoryList"`
+		AmountCoding               float64            `json:"amountCoding"` // 打码量
 	} `json:"data"`
 }
 
@@ -47,6 +48,7 @@ type AllWithdraw struct {
 	UserTodayWithdrawCount     int
 	UserTodayWithdrawFreeCount float64
 	WithdrawCategoryList       []WithdrawCategory
+	AmountCoding               float64
 }
 
 // 获取提现的提现的金额列表，就是固定提现的那个list
@@ -71,6 +73,7 @@ func GetWithdrawBasicInfo(ctx *context.Context) (*model.Response, *AllWithdraw, 
 				UserTodayWithdrawCount:     balanceResp.Data.UserTodayWithdrawCount,
 				UserTodayWithdrawFreeCount: balanceResp.Data.UserTodayWithdrawFreeCount,
 				WithdrawCategoryList:       balanceResp.Data.WithdrawCategoryList,
+				AmountCoding:               balanceResp.Data.AmountCoding,
 			}, nil
 		}
 	}

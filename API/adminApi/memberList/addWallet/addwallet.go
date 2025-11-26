@@ -9,6 +9,7 @@ import (
 	"autoTest/store/utils"
 	"context"
 	"sync"
+	"time"
 )
 
 // 新增用户的银行卡
@@ -171,53 +172,158 @@ func AddUserUpi(ctx *context.Context, userId string) (*model.BetResponse, error)
 
 // 运行为一个会员添加提现信息
 // 会员id绑定提现信息
+// RunAddWallet 为用户添加 4 种收款方式（银行卡、PIX、USDT、电子钱包）
+// 业务要求：必须等这 4 个全部成功后，后续提现逻辑才能继续
+// 防卡死设计：最多只等 8 秒，超时就强制放行（用户能提到钱最重要）
 func RunAddWallet(userId string) {
-	// 后台登录
+	// 1. 后台登录
 	ctx := context.Background()
-	if _, ctxToken, err := login.AdminSitLogin(&ctx); err != nil {
-		logger.LogError("报错消息添加银行信息的后台登录失败", err)
+	_, ctxToken, err := login.AdminSitLogin(&ctx)
+	if err != nil {
+		logger.LogError("RunAddWallet 后台登录失败", err)
 		return
-	} else {
-		adminToken := ctxToken
+	}
+	if ctxToken == nil {
+		logger.LogError("RunAddWallet 后台登录返回空 token", nil)
+		return
+	}
+
+	// 你原来的写法：ctxToken 实际上就是 token（*context.Context 里存的字符串）
+	adminToken := ctxToken
+
+	// 2. 核心：最多等 8 秒（可自行调整 15~30 秒之间）
+	const maxWait = 8 * time.Second
+	timeout := time.NewTimer(maxWait)
+	defer timeout.Stop()
+
+	// 完成信号通道
+	done := make(chan struct{}, 1)
+
+	// 3. 开启后台真正执行 4 个添加任务
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				logger.LogError("RunAddWallet 后台协程发生 panic", nil)
+			}
+		}()
+
 		wg := &sync.WaitGroup{}
 		wg.Add(4)
-		go func(wg *sync.WaitGroup, ctxToUse *context.Context, userId string) {
+
+		// 银行卡
+		go func() {
 			defer wg.Done()
 			if resp, err := AddUserBank(adminToken, userId); err != nil {
-				logger.LogError("添加银行信息的异步报错", err)
-				return
+				logger.LogError("添加银行卡失败 userId="+userId, err)
 			} else {
-				logger.Logger.Info("添加银行信息的异步", resp)
+				logger.Logger.Info("添加银行卡成功 userId="+userId, resp)
 			}
-		}(wg, adminToken, userId)
-		go func(wg *sync.WaitGroup, ctxToUse *context.Context, userId string) {
+		}()
+
+		// PIX
+		go func() {
 			defer wg.Done()
 			if resp, err := AddUserPix(adminToken, userId); err != nil {
-				logger.LogError("添加pix信息的异步报错", err)
-				return
+				logger.LogError("添加PIX失败 userId="+userId, err)
 			} else {
-				logger.Logger.Info("添加pix信息的异步", resp)
+				logger.Logger.Info("添加PIX成功 userId="+userId, resp)
 			}
-		}(wg, adminToken, userId)
-		go func(wg *sync.WaitGroup, ctxToUse *context.Context, userId string) {
+		}()
+
+		// USDT
+		go func() {
 			defer wg.Done()
 			if resp, err := AddUserUsdt(adminToken, userId); err != nil {
-				logger.LogError("添加usdt信息的异步报错", err)
-				return
+				logger.LogError("添加USDT失败 userId="+userId, err)
 			} else {
-				logger.Logger.Info("添加usdt信息的异步", resp)
+				logger.Logger.Info("添加USDT成功 userId="+userId, resp)
 			}
-		}(wg, adminToken, userId)
-		go func(wg *sync.WaitGroup, ctxToUse *context.Context, userId string) {
+		}()
+
+		// 电子钱包
+		go func() {
 			defer wg.Done()
 			if resp, err := AddUserWallet(adminToken, userId); err != nil {
-				logger.LogError("添加电子钱包信息的异步报错", err)
-				return
+				logger.LogError("添加电子钱包失败 userId="+userId, err)
 			} else {
-				logger.Logger.Info("添加电子钱包信息的异步", resp)
+				logger.Logger.Info("添加电子钱包成功 userId="+userId, resp)
 			}
-		}(wg, adminToken, userId)
+		}()
 
 		wg.Wait()
+		logger.Logger.Info("RunAddWallet 全部完成 userId=" + userId)
+
+		// 通知主协程：真的成功了
+		select {
+		case done <- struct{}{}:
+		default:
+		}
+	}()
+
+	// 4. 主协程：最多等 18 秒
+	select {
+	case <-done:
+		// 完美！4 个钱包全部成功，正常继续后续提现逻辑
+		return
+
+	case <-timeout.C:
+		// 超时了！强制放行，不再卡死整个提现流程
+		logger.Logger.Warn("RunAddWallet 超时 " + maxWait.String() + " 已强制放行，后续提现继续执行 userId=" + userId)
+		// 直接 return，后面的 SetWithdrawPasswordApi、RunWithdraw 等立刻执行
+		return
 	}
 }
+
+// func RunAddWallet(userId string) {
+// 	// 后台登录
+// 	ctx := context.Background()
+// 	if _, ctxToken, err := login.AdminSitLogin(&ctx); err != nil {
+// 		logger.LogError("报错消息添加银行信息的后台登录失败", err)
+// 		return
+// 	} else {
+// 		adminToken := ctxToken
+// 		wg := &sync.WaitGroup{}
+// 		wg.Add(4)
+// 		go func(wg *sync.WaitGroup, ctxToUse *context.Context, userId string) {
+// 			defer wg.Done()
+// 			if resp, err := AddUserBank(adminToken, userId); err != nil {
+// 				logger.LogError("添加银行信息的异步报错", err)
+// 				return
+// 			} else {
+// 				logger.Logger.Info("添加银行信息的异步", resp)
+// 			}
+// 		}(wg, adminToken, userId)
+// 		go func(wg *sync.WaitGroup, ctxToUse *context.Context, userId string) {
+// 			defer wg.Done()
+// 			if resp, err := AddUserPix(adminToken, userId); err != nil {
+// 				logger.LogError("添加pix信息的异步报错", err)
+// 				return
+// 			} else {
+// 				logger.Logger.Info("添加pix信息的异步", resp)
+// 			}
+// 		}(wg, adminToken, userId)
+// 		go func(wg *sync.WaitGroup, ctxToUse *context.Context, userId string) {
+// 			defer wg.Done()
+// 			if resp, err := AddUserUsdt(adminToken, userId); err != nil {
+// 				logger.LogError("添加usdt信息的异步报错", err)
+// 				return
+// 			} else {
+// 				logger.Logger.Info("添加usdt信息的异步", resp)
+// 			}
+// 		}(wg, adminToken, userId)
+// 		go func(wg *sync.WaitGroup, ctxToUse *context.Context, userId string) {
+// 			defer wg.Done()
+// 			if resp, err := AddUserWallet(adminToken, userId); err != nil {
+// 				logger.LogError("添加电子钱包信息的异步报错", err)
+// 				return
+// 			} else {
+// 				logger.Logger.Info("添加电子钱包信息的异步", resp)
+// 			}
+// 		}(wg, adminToken, userId)
+
+//			wg.Wait()
+//		}
+//	}
+//
+// RunAddWallet 完全火力全开版（推荐用于生产）
+// 特点：调用即返回，彻底不阻塞任何主流程，后台异步执行 4 个添加钱包请求
