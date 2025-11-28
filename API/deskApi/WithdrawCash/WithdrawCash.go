@@ -12,7 +12,7 @@ import (
 	"autoTest/store/request"
 	"autoTest/store/utils"
 	"context"
-	"fmt"
+	"encoding/json"
 	"strconv"
 	"sync"
 )
@@ -24,70 +24,8 @@ type withDrawaInfo struct {
 }
 
 // 提现
-// func RunWithDrawCase() {
-// 	// 用户的手机号码
-// 	userName := "918320694617"
-// 	// 判断当前用户是否有钱
-// 	if _, ctx, err := registerapi.GeneralAgentRegister(userName); err != nil {
-// 		logger.LogError("提现登录失败", err)
-// 		return
-// 	} else {
-// 		deskToken := ctx
-// 		wg := &sync.WaitGroup{}
-// 		moneyChan := make(chan *float64, 1)
-// 		allWithdrawChan := make(chan *recoversaasbalance.AllWithdraw, 1)
-// 		userIdChan := make(chan int, 1)
-// 		wg.Add(3)
-// 		go func(ctx *context.Context, ch chan<- *recoversaasbalance.AllWithdraw) {
-// 			defer wg.Done()
-// 			if _, allWithdraw, err := recoversaasbalance.GetWithdrawBasicInfo(ctx); err != nil {
-// 				logger.LogError("提现获取用户金额失败", err)
-// 				return
-// 			} else {
-// 				ch <- allWithdraw
-// 			}
-// 		}(deskToken, allWithdrawChan)
-// 		go func(ctx *context.Context, ch chan<- int) {
-// 			defer wg.Done()
-// 			// 获取当前会员的会员id
-// 			if _, userInfo, err := getuserinfo.GetUserInfo(ctx); err != nil {
-// 				logger.LogError("获取用户信息失败", err)
-// 				return
-// 			} else {
-// 				ch <- userInfo.UserID
-// 			}
-// 		}(deskToken, userIdChan)
-// 		func(ctx *context.Context, ch chan<- *float64) {
-// 			defer wg.Done()
-// 			if _, amount, err := recoversaasbalance.RecoverSaasBalance(ctx); err != nil {
-// 				logger.LogError("提现获取用户金额失败", err)
-// 				return
-// 			} else {
-// 				ch <- &amount
-// 			}
-// 		}(deskToken, moneyChan)
-// 		wg.Wait()
-// 		time.Sleep(time.Second * 2)
-// 		// 进行提现信息的绑定
-// 		userid := <-userIdChan
-// 		go addwallet.RunAddWallet(strconv.Itoa(userid))
-// 		// 设置提现密码
-// 		_, err := SetWithdrawPasswordApi(deskToken)
-// 		if err != nil {
-// 			logger.LogError("提现密码设置失败", err)
-// 			return
-// 		}
-// 		withDrawaChan := make(chan *withDrawaInfo, 1)
-// 		WithDrawCase(deskToken, <-moneyChan, <-allWithdrawChan, withDrawaChan)
-// 		withDrawa := <-withDrawaChan
-// 		logger.Logger.Info("提现金额", withDrawa.withDrawaAmont)
-// 		// 后台进行订单的处理
-// 		withdrawalorders.RunWithdraw(userid, withDrawa.withDrawaType, withDrawa.withDrawaAmont, withDrawa.withDrawaAmont)
-// 	}
-// }
-
 func RunWithDrawCase() {
-	userName := "912025202140"
+	userName := "912025112808"
 
 	_, deskCtx, err := registerapi.GeneralAgentRegister(userName)
 	if err != nil {
@@ -196,7 +134,6 @@ PT:
 	WithdrawCategoryListLen := len(allwithdraw.WithdrawCategoryList)
 PT2:
 	j := utils.RandInt(0, WithdrawCategoryListLen-1)
-	fmt.Println("随机出来的提现大类", allwithdraw.WithdrawCategoryList[j].WithdrawType)
 	if allwithdraw.WithdrawCategoryList[j].WithdrawType == "UPI" {
 		// 提现类型目前不支持upi
 		goto PT2
@@ -262,6 +199,92 @@ func WithdrawApplyApi(ctx *context.Context, Amount float64, WithdrawCategoryId i
 			return model.HandlerErrorRes2(model.ErrorLoggerType("/api/Withdraw/WithdrawApply解析失败", err)), err
 		} else {
 			return resp, nil
+		}
+	}
+}
+
+type TaskYestarDayWithdrawaNumber struct {
+	TotalWithdrawaNumber int // 昨日总的订单数
+	IsWithdrawa          int // 触发了多少条提现补偿
+}
+
+type WithdrawalRequest struct {
+	// 提现类型
+	WithdrawType string `json:"withdrawType"`
+	// 提现状态
+	WithdrawState string `json:"withdrawState"`
+	// 开始时间 (毫秒时间戳)
+	StartTime int64 `json:"startTime"`
+	// 结束时间 (毫秒时间戳)
+	EndTime  int64 `json:"endTime"`
+	PageNo   int   `json:"pageNo"`
+	PageSize int   `json:"pageSize"`
+	model.BaseStruct
+}
+
+type WithdrawHistoryInfo struct {
+	CreateTime        int64   `json:"createTime"`        // 订单创建时间
+	OrderNo           string  `json:"orderNo"`           // 订单号
+	WithdrawType      string  `json:"withdrawType"`      // 提现通道类型
+	Amount            float64 `json:"amount"`            // 订单金额
+	CompensationState int     `json:"compensationState"` // 提现赔付的标志位 0 不需要赔付  1 需要赔付 2 待领取 3 已过期
+}
+
+// 内部列表项结构：只包含您需要的字段
+type ListItem struct {
+	OrderNo           string  `json:"orderNo"`
+	WithdrawType      string  `json:"withdrawType"`
+	Amount            float64 `json:"amount"`
+	CreateTime        int64   `json:"createTime"`
+	CompensationState int     `json:"compensationState"`
+}
+
+// Data 层结构
+type Data struct {
+	List       []ListItem `json:"list"`
+	PageNo     int        `json:"pageNo"`
+	TotalPage  int        `json:"totalPage"`
+	TotalCount int        `json:"totalCount"`
+}
+
+// 完整的根结构
+type Response struct {
+	Data       Data   `json:"data"`
+	Code       int    `json:"code"`
+	Msg        string `json:"msg"`
+	MsgCode    int    `json:"msgCode"`
+	ServerTime int64  `json:"serverTime"`
+}
+
+// 提现历史 昨日
+func GetWithdrawHistoryApi(ctx *context.Context, startTime, endTime int64) (*model.Response, []WithdrawHistoryInfo, error) {
+	var WithdrawHistoryInfoList []WithdrawHistoryInfo
+	api := "/api/Withdraw/GetWithdrawHistory"
+	payloadStruct := &WithdrawalRequest{}
+	timestamp, random, language := request.GetTimeRandom()
+	payloadList := []interface{}{"", "", startTime, endTime, 1, 20, random, language, "", timestamp}
+	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
+		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Withdraw/GetWithdrawHistory请求报错", err)), nil, err
+	} else {
+		if resp, err := model.ParseResponse(respBoy); err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Withdraw/GetWithdrawHistory解析失败", err)), nil, err
+		} else {
+			// 解析想要的数据
+			var res Response
+			if err := json.Unmarshal(respBoy, &res); err != nil {
+				return model.HandlerErrorRes(model.ErrorLoggerType("/api/Withdraw/GetWithdrawHistory【Response】解析失败", err)), nil, err
+			} else {
+				for _, v := range res.Data.List {
+					WithdrawHistoryInfoList = append(WithdrawHistoryInfoList, WithdrawHistoryInfo{
+						CreateTime:        v.CreateTime,
+						OrderNo:           v.OrderNo,
+						WithdrawType:      v.WithdrawType,
+						Amount:            v.Amount,
+						CompensationState: v.CompensationState,
+					})
+				}
+			}
+			return resp, WithdrawHistoryInfoList, nil
 		}
 	}
 }

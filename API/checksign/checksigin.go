@@ -91,19 +91,19 @@ func GenerateSignatureFromJSON(jsonInput interface{}, verifyPwd *string) (string
 // 运行检测签名
 func RunCheckSign() {
 	jsonStr := `{
-        "gameCode": "chicken-road-two",
-        "vendorCode": "INOUT",
-        "gameId": 104589,
-        "returnUrl": "https://www.mggametransit.com/game/allGames?vendorCode=INOUT&name=INOUT",
-        "deviceType": "H5",
-        "deviceTypeId": "6aed08b5558eacb5d97f7b8441ac99f4",
-        "language": "en",
-        "random": 115402124942,
-        "signature": "",
-        "timestamp": 1763454608
-    }`
+  "withdrawType": "",
+  "withdrawState": "",
+  "startTime": 1764181800000,
+  "endTime": 1764259199000,
+  "pageSize": 10,
+  "pageNo": 1,
+  "language": "en",
+  "random": 586216211478,
+  "signature": "",
+  "timestamp": 1764318102
+}`
 
 	sig, _ := GenerateSignatureFromJSON(jsonStr, nil)
 	fmt.Println(sig)
-	// 输出：1EDBCFC6905E7137A24BA8D43B5621F9   ← 完全一致！一模一样！
+	// 输出：EC77D73D8B868D0A7650CD0B32D16895   ← 完全一致！一模一样！
 }

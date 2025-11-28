@@ -242,14 +242,14 @@ func min(a, b int) int {
 
 // RunInvite 一键执行
 func RunInvite() {
-	inviteCode := "HR32EAN" // 总代的邀请码
+	inviteCode := "T8FK2GN" // 总代的邀请码
 	ctx, err := login.RunAdminSitLogin()
 	if err != nil {
 		fmt.Println("❌ 登录失败:", err)
 		return
 	}
 
-	subordinates := []int{6, 5, 6} // 第1层2人，第2层3人
+	subordinates := []int{15, 10, 25} // 第1层2人，第2层3人
 	userDB = make(map[string]*User)
 	fmt.Printf("🎯 开始绑定到总代: %s, 层级: %v\n", inviteCode, subordinates)
 

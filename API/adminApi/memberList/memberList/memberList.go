@@ -208,3 +208,39 @@ func GetUserListApi(ctx *context.Context, userNumber int, userType int8) (*model
 		}
 	}
 }
+
+type UserAmount struct {
+	UserId int `json:"userId"`
+	model.BaseStruct
+}
+
+type UserAmountResponse struct {
+	Data          string `json:"data"`
+	MsgParameters string `json:"msgParameters"`
+	Code          int    `json:"code"`
+	Msg           string `json:"msg"`
+	MsgCode       int    `json:"msgCode"`
+}
+
+// 用户id返回用户账号
+func GetUserAmount(ctx *context.Context, userid int) (*model.Response, string, error) {
+	api := "/api/Users/GetUserAccount"
+	timestamp, random, language := request.GetTimeRandom()
+	payloadStruct := &UserAmount{}
+	payloadList := []interface{}{userid, random, language, "", timestamp}
+	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
+		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetUserAccount请求失败", err)), "", err
+	} else {
+		if resp, err := model.ParseResponse(respBoy); err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetUserAccount解析失败", err)), "", err
+		} else {
+			var res UserAmountResponse
+			if err := json.Unmarshal(respBoy, &res); err != nil {
+				return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetUserAccount[UserAmountResponse]解析失败", err)), "", err
+			} else {
+				//logger.Logger.Info("用户的账号", res.Data)
+				return resp, res.Data, nil
+			}
+		}
+	}
+}

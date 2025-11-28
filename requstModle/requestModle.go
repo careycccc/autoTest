@@ -30,7 +30,7 @@ func DeskTenAuthorRequest[P any](ctx *context.Context, api string, payload *P, p
 	header_struct := &model.DeskHeaderAuthorizationStruct2{}
 	plant_h5 := config.GoodsDeposit_URL
 	token := (*ctx).Value(desklogin.DeskAuthTokenKey)
-	//fmt.Println("前台登陆后的token", token)
+	// fmt.Println("前台登陆后的token", token)
 	header_list := []interface{}{plant_h5, plant_h5, token}
 	if headerMap, err := request.AssignSliceToStructMap(header_struct, header_list); err != nil {
 		return nil, nil, errors.New("failed to convert headerMap struct to map")

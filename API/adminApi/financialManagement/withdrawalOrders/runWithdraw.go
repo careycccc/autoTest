@@ -2,6 +2,7 @@ package withdrawalorders
 
 import (
 	"autoTest/API/adminApi/login"
+	"autoTest/API/utils"
 	"autoTest/store/logger"
 	"time"
 )
@@ -51,4 +52,19 @@ func RunWithdraw(userId int, WithdrawType string, minWithdrawAmount, maxWithdraw
 
 		}
 	}
+}
+
+/*
+将提现人的会员id给计算出来 提现订单 + 提现锁定
+返回会员列表
+*
+*/
+func GetWithdrawalAmountList() []int {
+	withdrawalOrdersList := RunWithDrawCase()   // 提现订单list
+	withdrawalLockList := RunWithLockDrawCase() // 提现锁定的人数
+	result := append(withdrawalOrdersList, withdrawalLockList...)
+	// 去重操作
+	uniqueList := utils.SliceUnique(result)
+	//logger.Logger.Info("昨日提现的人数:", len(uniqueList), uniqueList)
+	return uniqueList
 }

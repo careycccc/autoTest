@@ -82,6 +82,7 @@ func PostRequestCofig(payload map[string]interface{}, base_url, api string, args
 	}
 	payload["signature"] = signature
 	//将请求数据转换成json
+	//fmt.Println("最后的请求体数据", payload)
 	body, err := json.Marshal(payload)
 	if err != nil {
 		log.Fatalf(" json 编码失败:%v", err)

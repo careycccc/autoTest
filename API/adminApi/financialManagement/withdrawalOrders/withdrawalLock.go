@@ -1,8 +1,12 @@
 package withdrawalorders
 
 import (
+	querycommonfunc "autoTest/API/adminApi/financialManagement/withdrawalOrders/QueryCommonFunc"
+	"autoTest/API/adminApi/login"
+	"autoTest/API/utils"
 	requstmodle "autoTest/requstModle"
 	"autoTest/store/config"
+	"autoTest/store/logger"
 	"autoTest/store/model"
 	"autoTest/store/request"
 	"context"
@@ -85,6 +89,33 @@ func LockWithdrawOrderApi(ctx *context.Context, userId int, withdrawinfo *Withdr
 			return model.HandlerErrorRes2(model.ErrorLoggerType("/api/WithdrawOrder/LockWithdrawOrder解析失败", err)), err
 		} else {
 			return resp, nil
+		}
+	}
+}
+
+// 查询提现锁定的报表
+func QueryLockWithdrawOrderApi(ctx *context.Context, startTime, endTime int64) (*model.Response, []int, error) {
+	api := "/api/WithdrawOrder/GetWithdrawLockPageList"
+	if resp, list, err := querycommonfunc.QueryCommonFuncApi(ctx, api, startTime, endTime); err != nil {
+		return model.HandlerErrorRes(model.ErrorLoggerType("/api/WithdrawOrder/GetWithdrawLockPageList报错", err)), nil, err
+	} else {
+		return resp, list, nil
+	}
+}
+
+// 运行查询锁定提现订单的函数
+func RunWithLockDrawCase() []int {
+	if ctx, err := login.RunAdminSitLogin(); err != nil {
+		logger.LogError("提现锁定订单的后台登录报错", err)
+		return nil
+	} else {
+		start, end := utils.GetYesterdayStartEndMilli()
+		if _, userList, err := QueryLockWithdrawOrderApi(ctx, start, end); err != nil {
+			logger.LogError("提现锁定订单的查询的报错信息", err)
+			return nil
+		} else {
+			// logger.Logger.Info("提现锁定订单的查询结果", userList)
+			return userList
 		}
 	}
 }

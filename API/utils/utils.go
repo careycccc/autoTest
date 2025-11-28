@@ -162,6 +162,38 @@ func GetTodayStartAndEnd() (int64, int64) {
 	return start.UnixMilli(), end.UnixMilli()
 }
 
+// 都强制返回 Asia/Singapore（+08）昨天的 00:00:00.000 ～ 23:59:59.999
+func GetYesterdayStartEndMilli() (startMs, endMs int64) {
+	// 强制使用新加坡时区（关键！）
+	loc, _ := time.LoadLocation("Asia/Singapore")
+
+	// 当前时间转成新加坡时间
+	nowInSG := time.Now().In(loc)
+
+	// 构造“今天”00:00:00（新加坡时间）
+	todayZero := time.Date(
+		nowInSG.Year(),
+		nowInSG.Month(),
+		nowInSG.Day(),
+		0, 0, 0, 0,
+		loc,
+	)
+
+	// 昨天 00:00:00
+	yesterdayZero := todayZero.AddDate(0, 0, -1)
+
+	// 昨天 23:59:59.000（你后端真正用的结束时间）
+	yesterdayEnd := time.Date(
+		yesterdayZero.Year(),
+		yesterdayZero.Month(),
+		yesterdayZero.Day(),
+		23, 59, 59, 0, // 注意：秒和纳秒都设为 0，得到 .000
+		loc,
+	)
+
+	return yesterdayZero.UnixMilli(), yesterdayEnd.UnixMilli()
+}
+
 // 将浮点数保留2位小数 四舍五入
 func Rounding(num float64) float64 {
 	formattedNum := fmt.Sprintf("%.2f", num)
@@ -184,4 +216,18 @@ func GetDayStartEnd() (string, string) {
 	// 格式化输出
 	const layout = "2006-01-02 15:04:05"
 	return start.Format(layout), end.Format(layout)
+}
+
+// 切片去重
+// SliceUnique 通用去重函数（支持 int、int64、string 等任何可比较类型）
+func SliceUnique[T comparable](slice []T) []T {
+	seen := make(map[T]bool)
+	result := []T{}
+	for _, v := range slice {
+		if !seen[v] {
+			seen[v] = true
+			result = append(result, v)
+		}
+	}
+	return result
 }
