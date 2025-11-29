@@ -5,6 +5,7 @@ import (
 	login "autoTest/API/deskApi/loginApi"
 	requstmodle "autoTest/requstModle"
 	"autoTest/store/config"
+	"autoTest/store/logger"
 	"autoTest/store/model"
 	"autoTest/store/request"
 	"autoTest/store/utils"
@@ -30,6 +31,8 @@ func GeneralAgentRegister(userName string) (*model.Response, *context.Context, e
 	// 发送验证码，获取验证码
 	ctx := context.Background()
 	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 18, userName); err != nil {
+		logger.Logger.Warn("验证码发送信息", res)
+		logger.LogError("验证码发送信息", err)
 		return res, nil, err
 	} else {
 		// 随机浏览器指纹
@@ -73,6 +76,8 @@ func NewGeneralAgentRegister(userName string) (*model.Response, *context.Context
 	// 发送验证码，获取验证码
 	ctx := context.Background()
 	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 1, userName); err != nil {
+		logger.Logger.Warn("验证码发送信息", res)
+		logger.LogError("验证码发送信息", err)
 		return res, nil, err
 	} else {
 		api := "/api/Home/Register"

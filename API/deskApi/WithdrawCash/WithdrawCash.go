@@ -25,7 +25,7 @@ type withDrawaInfo struct {
 
 // 提现
 func RunWithDrawCase() {
-	userName := "911128199711"
+	userName := "911129199717"
 
 	_, deskCtx, err := registerapi.GeneralAgentRegister(userName)
 	if err != nil {

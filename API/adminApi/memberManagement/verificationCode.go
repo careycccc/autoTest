@@ -120,11 +120,20 @@ func GetVerificationCode(ctx *context.Context, userName string) (*model.Response
 				MsgCode: -1,
 			}, "", err
 		} else {
-			return &model.Response{
-				Code:    0,
-				Msg:     "Succeed",
-				MsgCode: 0,
-			}, tifyResponse.Data.List[0].Number, nil
+			if len(tifyResponse.Data.List) > 0 {
+				return &model.Response{
+					Code:    0,
+					Msg:     "Succeed",
+					MsgCode: 0,
+				}, tifyResponse.Data.List[0].Number, nil
+			} else {
+				return &model.Response{
+					Code:    -1,
+					Msg:     "Error",
+					MsgCode: -1,
+				}, "", nil
+			}
+
 		}
 
 	}

@@ -34,6 +34,8 @@ func MobileAutoLoginFunc(userName string) (*model.BetResponse, context.Context, 
 	// 获取验证码
 	ctx := context.Background()
 	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 18, userName); err != nil {
+		logger.Logger.Warn("验证码发送信息", res)
+		logger.LogError("验证码发送信息", err)
 		return model.ResponseToBetResponse(res), nil, err
 	} else {
 		registerFingerprint := utils.GenerateCryptoRandomString(32)
@@ -87,6 +89,8 @@ func RegisterMobileLoginFunc(userName, invitationCode string) (*model.BetRespons
 	// 获取验证码
 	ctx := context.Background()
 	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 18, userName); err != nil {
+		logger.Logger.Warn("验证码发送信息", res)
+		logger.LogError("验证码发送信息", err)
 		return model.ResponseToBetResponse(res), nil, err
 	} else {
 		registerFingerprint := utils.GenerateCryptoRandomString(32)

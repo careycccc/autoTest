@@ -69,7 +69,7 @@ import "time"
 // 3004
 const (
 	ADMIN_SYSTEM_URL      = "https://sit-tenantadmin-3004.mggametransit.com" // 后台地址,包括 domain refer
-	REGISTER_URL          = "https://sit-3004-register.mggametransit.com"    // 前台注册地址
+	REGISTER_URL          = "https://sit-3004-register.arplatsaassit1.club"  // 前台注册地址
 	SIT_WEB_API           = "https://sit-webapi.mggametransit.com"           // h5端的请求地址
 	PLANT_H5              = "https://sit-plath5-y1.mggametransit.com"        // y1前台地址 包括domain refer
 	WMG_H5                = "https://h5.wmgametransit.com"                   // y1彩票投注相关的请求头地址
