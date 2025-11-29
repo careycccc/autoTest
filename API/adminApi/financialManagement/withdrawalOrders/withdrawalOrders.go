@@ -55,7 +55,7 @@ func RunWithDrawCase() []int {
 		logger.LogError("提现订单的后台登录报错", err)
 		return nil
 	} else {
-		start, end := utils.GetYesterdayStartEndMilli()
+		_, start, _, end, _ := utils.ParseTimeRangeToTimestamp(config.StartTime, config.EndTime)
 		if _, userList, err := QueryWithdrawaAmount(ctx, start, end); err != nil {
 			logger.LogError("提现订单的查询的报错信息", err)
 			return nil

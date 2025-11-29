@@ -194,6 +194,41 @@ func GetYesterdayStartEndMilli() (startMs, endMs int64) {
 	return yesterdayZero.UnixMilli(), yesterdayEnd.UnixMilli()
 }
 
+// Location 北京时间（东八区）
+var BeijingLocation = time.FixedZone("Asia/Shanghai", 8*3600)
+
+// SriLankaLocation 斯里兰卡时间 = UTC+5:30
+var SriLankaLocation = time.FixedZone("Asia/Colombo", 5*3600+30*60) // +0530
+//	startStr: 开始时间字符串，如 "2025-11-01 00:00:00" 或 "2025-11-01 15:04:05"
+//	endStr:   结束时间字符串
+//	layout:   时间格式，默认为 "2006-01-02 15:04:05"，可自定义
+
+// startUnix      秒级开始时间戳
+// startUnixMilli 毫秒级开始时间戳
+// endUnix        秒级结束时间戳
+// endUnixMilli   毫秒级结束时间戳
+// err            错误信息
+func ParseTimeRangeToTimestamp(startStr, endStr string, layout ...string) (startUnix, startUnixMilli, endUnix, endUnixMilli int64, err error) {
+	// 默认布局
+	timeLayout := "2006-01-02 15:04:05"
+	if len(layout) > 0 && layout[0] != "" {
+		timeLayout = layout[0]
+	}
+	// 解析时间（使用北京时间）
+	startTime, err := time.ParseInLocation(timeLayout, startStr, SriLankaLocation)
+	if err != nil {
+		return 0, 0, 0, 0, fmt.Errorf("解析开始时间失败: %v", err)
+	}
+	endTime, err := time.ParseInLocation(timeLayout, endStr, SriLankaLocation)
+	if err != nil {
+		return 0, 0, 0, 0, fmt.Errorf("解析结束时间失败: %v", err)
+	}
+	if endTime.Before(startTime) {
+		return 0, 0, 0, 0, fmt.Errorf("结束时间不能早于开始时间")
+	}
+	return startTime.Unix(), startTime.UnixMilli(), endTime.Unix(), endTime.UnixMilli(), nil
+}
+
 // 将浮点数保留2位小数 四舍五入
 func Rounding(num float64) float64 {
 	formattedNum := fmt.Sprintf("%.2f", num)

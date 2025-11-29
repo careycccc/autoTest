@@ -4,6 +4,7 @@ import (
 	"autoTest/API/adminApi/login"
 	"autoTest/API/utils"
 	requstmodle "autoTest/requstModle"
+	"autoTest/store/config"
 	"autoTest/store/logger"
 	"autoTest/store/model"
 	"autoTest/store/request"
@@ -112,7 +113,7 @@ func RunFundtransactionrecordsApi(financialTypeList []string) *FundTransactionIn
 		logger.LogError("资金账变的查询后台登录失败", err)
 		return &FundTransactionInfoList{}
 	} else {
-		startTime, endTime := utils.GetYesterdayStartEndMilli()
+		_, startTime, _, endTime, _ := utils.ParseTimeRangeToTimestamp(config.StartTime, config.EndTime)
 		if _, p, err := FundtransactionrecordsApi(ctx, financialTypeList, startTime, endTime); err != nil {
 			logger.Logger.Warn("提现赔付账变的错误信息", err)
 			return &FundTransactionInfoList{}

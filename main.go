@@ -1,7 +1,7 @@
 package main
 
 import (
-	withdrawaltimeoutcompensation "autoTest/API/adminApi/activeManagement/WithdrawalTimeoutCompensation"
+	withdrawcash "autoTest/API/deskApi/WithdrawCash"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -32,14 +32,13 @@ func main() {
 	// invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
 	// invitationcarousel.RunSpinInvitedWheel() // 当前用户邀请转盘自动邀请下级
 	// invitecode.RunInvite() // 多级下级邀请
-	// withdrawcash.RunWithDrawCase() // 提现
+	withdrawcash.RunWithDrawCase() // 提现
 	// topup.RunRechargeGoods()
 	// GameBetOrders.RunGameBetOrders()              // 后台投注订单的查询
 	// platformreports.RunGetPlatRptStatisticPageList() // 平台报表-> 每日汇总报表
 	// chickenroadgame.RunChickenRoadGame() // 鸡路小游戏
 	//withdrawaltimeoutcompensation.GetYesterdayUserAmont() //获取昨天的提现超时赔付的账变的账号以及金额
 	// withdrawalorders.RunWithDrawCase() // 查询订单数据
-	//withdrawalorders.RunWithLockDrawCase() // 查询提现锁定的数据
-	withdrawaltimeoutcompensation.ExecelWithdrawHistoryInfo()
-
+	// withdrawalorders.RunWithLockDrawCase() // 查询提现锁定的数据
+	// withdrawaltimeoutcompensation.ExecelWithdrawHistoryInfo()
 }

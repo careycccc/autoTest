@@ -148,7 +148,7 @@ func RunWithdrawTask(userName string) []withdrawcash.WithdrawHistoryInfo {
 		logger.Logger.Warn("提现订单的前台登录失败", err)
 		return []withdrawcash.WithdrawHistoryInfo{}
 	} else {
-		startTime, endTime := utils.GetYesterdayStartEndMilli()
+		_, startTime, _, endTime, _ := utils.ParseTimeRangeToTimestamp(config.StartTime, config.EndTime)
 		if _, withdrawInfoList, err := withdrawcash.GetWithdrawHistoryApi(ctx, startTime, endTime); err != nil {
 			logger.Logger.Warn("该用户的历史提现订单获取失败", err)
 			return []withdrawcash.WithdrawHistoryInfo{}
@@ -169,11 +169,14 @@ func RunWithdrawTask(userName string) []withdrawcash.WithdrawHistoryInfo {
 // 执行提现历史的数据
 func ExecelWithdrawHistoryInfo() {
 	userAmountList := ExcelQueue()
+	n := 0
 	for _, v := range userAmountList {
 		tasks := RunWithdrawTask(v)
 		for _, v := range tasks {
 			fmt.Println("tasks---", v)
+			n++
 		}
 	}
+	fmt.Printf("提现触发了提现赔付的单子条数%d", n)
 
 }
