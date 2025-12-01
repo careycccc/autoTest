@@ -133,7 +133,7 @@ func ExcelQueue() []string {
 		return nil
 	} else {
 		list := withdrawalorders.GetWithdrawalAmountList()
-		fmt.Printf("提现的会员id列表%v,提现的人数%d\n", list, len(list))
+		fmt.Printf("提现的会员id列表:%v,提现的人数:%d\n", list, len(list))
 		userAmountList := []string{}
 		for _, v := range list {
 			st := GetAmountQueue(ctx, v)
@@ -147,6 +147,12 @@ func ExcelQueue() []string {
 	}
 }
 
+var (
+	ToBeCollected int = 0 // 待领取
+	Collected     int = 0 // 已领取
+	Expired       int = 0 // 已过期
+)
+
 // task 负责登录和获取昨日的提现订单，并且返回那些触发了，昨天提现的订单数
 func RunWithdrawTask(userName string) []withdrawcash.WithdrawHistoryInfo {
 	var list []withdrawcash.WithdrawHistoryInfo
@@ -155,7 +161,6 @@ func RunWithdrawTask(userName string) []withdrawcash.WithdrawHistoryInfo {
 		logger.Logger.Warn("提现订单的前台登录失败", err)
 		return []withdrawcash.WithdrawHistoryInfo{}
 	} else {
-		//fmt.Println("ctx", (*ctx).Value(desklogin.DeskAuthTokenKey))
 		_, startTime, _, endTime, _ := utils.ParseTimeRangeToTimestamp(config.StartTime, config.EndTime)
 		if _, withdrawInfoList, err := withdrawcash.GetWithdrawHistoryApi(ctx, startTime, endTime); err != nil {
 			logger.Logger.Warn("该用户的历史提现订单获取失败", err)
@@ -165,6 +170,14 @@ func RunWithdrawTask(userName string) []withdrawcash.WithdrawHistoryInfo {
 			for _, v := range withdrawInfoList {
 				// 并且统计这个账号触发了提现赔付的
 				if v.CreateTime < endTime && v.CompensationState > 0 {
+					switch v.CompensationState {
+					case 1:
+						ToBeCollected++
+					case 2:
+						Collected++
+					case 3:
+						Expired++
+					}
 					list = append(list, v)
 				}
 			}
@@ -189,5 +202,5 @@ func ExecelWithdrawHistoryInfo() {
 			n++
 		}
 	}
-	fmt.Printf("提现触发了提现赔付的单子条数%d", n)
+	fmt.Printf("提现触发了提现赔付的单子条数%d,待领取%d,已领取%d,已过期%d", n, ToBeCollected, Collected, Expired)
 }

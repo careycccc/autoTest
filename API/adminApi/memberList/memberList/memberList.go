@@ -183,11 +183,10 @@ userNumber 传入一个数字，返回对应数量的用户列表的详细信息
 userType 0 正式账号 1 测试账号 2 游客账号
 *
 */
-func GetUserListApi(ctx *context.Context, userNumber int, userType int8) (*model.Response, []*UserInfo, error) {
+func GetUserListApi(ctx *context.Context, pageSize, userNumber int, userType int8) (*model.Response, []*UserInfo, error) {
 	api := "/api/Users/GetPageList"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &GetUserListStruct{}
-	pageSize := 150
 	payloadList := []interface{}{userType, pageSize, userNumber, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList请求失败", err)), nil, err

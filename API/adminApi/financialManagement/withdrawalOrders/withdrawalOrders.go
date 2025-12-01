@@ -56,12 +56,12 @@ func RunWithDrawCase() []int {
 		return nil
 	} else {
 		_, start, _, end, _ := utils.ParseTimeRangeToTimestamp(config.StartTime, config.EndTime)
-		if _, userList, err := QueryWithdrawaAmount(ctx, start, end); err != nil {
+		if _, list, err := QueryWithdrawaAmount(ctx, start, end); err != nil {
 			logger.LogError("提现订单的查询的报错信息", err)
 			return nil
 		} else {
 			// logger.Logger.Info("提现订单的查询结果", userList)
-			return userList
+			return list
 		}
 	}
 }

@@ -46,7 +46,7 @@ func getUserId(userNumber int, userType int8) []int {
 		logger.LogError("登录失败", err)
 		return nil
 	}
-	_, list, err := memberlist.GetUserListApi(ctxToken, userNumber, userType)
+	_, list, err := memberlist.GetUserListApi(ctxToken, userNumber, 1, userType)
 	if err != nil {
 		logger.LogError("获取用户列表失败", err)
 		return nil
