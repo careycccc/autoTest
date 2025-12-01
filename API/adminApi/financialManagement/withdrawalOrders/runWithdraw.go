@@ -60,11 +60,11 @@ func RunWithdraw(userId int, WithdrawType string, minWithdrawAmount, maxWithdraw
 *
 */
 func GetWithdrawalAmountList() []int {
-	withdrawalOrdersList := RunWithDrawCase()   // 提现订单list
-	withdrawalLockList := RunWithLockDrawCase() // 提现锁定的人数
-	result := append(withdrawalOrdersList, withdrawalLockList...)
+	withdrawalOrdersList := RunWithDrawCase() // 提现订单list
+	//withdrawalLockList := RunWithLockDrawCase() // 提现锁定的人数
+	//result := append(withdrawalOrdersList, withdrawalLockList...)
 	// 去重操作
-	uniqueList := utils.SliceUnique(result)
+	uniqueList := utils.SliceUnique(withdrawalOrdersList)
 	//logger.Logger.Info("昨日提现的人数:", len(uniqueList), uniqueList)
 	return uniqueList
 }

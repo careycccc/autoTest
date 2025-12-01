@@ -106,6 +106,7 @@ func GetAmountQueue(ctx *context.Context, userId int) string {
 			logger.LogError("根据id查找出用户报错", err)
 			return
 		} else {
+			//logger.Logger.Warn("根据id查找出用户的响应", resp)
 			userAmounts = userAmount
 		}
 	}(wg, ctx, userId)
@@ -115,6 +116,7 @@ func GetAmountQueue(ctx *context.Context, userId int) string {
 		defer wg.Done()
 		if _, err := memberlist.UpdatePassword(ctx, int64(userId), config.SUB_PWD); err != nil {
 			logger.LogError("根据id查找出修改用户密码报错", err)
+
 			return
 		}
 	}(wg, userId, ctx)
@@ -131,9 +133,14 @@ func ExcelQueue() []string {
 		return nil
 	} else {
 		list := withdrawalorders.GetWithdrawalAmountList()
+		fmt.Printf("提现的会员id列表%v,提现的人数%d\n", list, len(list))
 		userAmountList := []string{}
 		for _, v := range list {
 			st := GetAmountQueue(ctx, v)
+			if st == "" {
+				logger.Logger.Warn("该后台账号没有查询账号的权限")
+				continue
+			}
 			userAmountList = append(userAmountList, st)
 		}
 		return userAmountList
@@ -148,6 +155,7 @@ func RunWithdrawTask(userName string) []withdrawcash.WithdrawHistoryInfo {
 		logger.Logger.Warn("提现订单的前台登录失败", err)
 		return []withdrawcash.WithdrawHistoryInfo{}
 	} else {
+		//fmt.Println("ctx", (*ctx).Value(desklogin.DeskAuthTokenKey))
 		_, startTime, _, endTime, _ := utils.ParseTimeRangeToTimestamp(config.StartTime, config.EndTime)
 		if _, withdrawInfoList, err := withdrawcash.GetWithdrawHistoryApi(ctx, startTime, endTime); err != nil {
 			logger.Logger.Warn("该用户的历史提现订单获取失败", err)
@@ -169,14 +177,17 @@ func RunWithdrawTask(userName string) []withdrawcash.WithdrawHistoryInfo {
 // 执行提现历史的数据
 func ExecelWithdrawHistoryInfo() {
 	userAmountList := ExcelQueue()
+	if len(userAmountList) == 0 {
+		logger.Logger.Warn("没有获取到提现历史的数据")
+		return
+	}
 	n := 0
 	for _, v := range userAmountList {
 		tasks := RunWithdrawTask(v)
 		for _, v := range tasks {
-			fmt.Println("tasks---", v)
+			fmt.Println(v)
 			n++
 		}
 	}
 	fmt.Printf("提现触发了提现赔付的单子条数%d", n)
-
 }

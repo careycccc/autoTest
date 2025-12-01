@@ -31,7 +31,7 @@ func AdminSitLogin(ctx *context.Context) (*model.Response, *context.Context, err
 	headerUrl := config.ADMIN_SYSTEM_URL
 	headerList := []interface{}{headerUrl, headerUrl, headerUrl}
 	if respBody, _, err := request.PostGenericsFuncFlatten(headerUrl, api, playStruct, playList, headerStruct, headerList, request.StructToMap, request.InitStructToMap); err != nil {
-		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/Login 请求失败", err)), nil, err
+		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Login/Login 请求失败", err)), nil, err
 	} else {
 		token, err := model.GetJsonToken(string(respBody))
 		if err != nil {
@@ -39,7 +39,7 @@ func AdminSitLogin(ctx *context.Context) (*model.Response, *context.Context, err
 		}
 		ctxToken := context.WithValue(*ctx, AuthTokenKey, token)
 		if resp, err := model.ParseResponse(respBody); err != nil {
-			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/Login 响应解析失败", err)), nil, err
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Login/Login 响应解析失败", err)), nil, err
 		} else {
 			return resp, &ctxToken, nil
 		}
