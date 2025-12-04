@@ -1,6 +1,7 @@
 package querycommonfunc
 
 import (
+	"autoTest/API/utils"
 	requstmodle "autoTest/requstModle"
 	"autoTest/store/model"
 	"autoTest/store/request"
@@ -20,19 +21,15 @@ type QueryWithdrawaAmountStruct struct {
 type QueryWithdrawaResponse struct {
 	Data struct {
 		List []struct {
-			UserId int `json:"userId"`
+			UserId         int   `json:"userId"`
+			CreateTime     int64 `json:"createTime"`     // 订单创建时间
+			LastUpdateTime int64 `json:"lastUpdateTime"` //订单最后更新时间
 		} `json:"list"`
 		Summary struct {
 			TotalActualAmount float64 `json:"totalActualAmount"` // 总实际金额
 		} `json:"summary"`
 		TotalCount int `json:"totalCount"` // 总订单条数
 	} `json:"data"`
-}
-
-type QueryWithdrawaSummary struct {
-	UserIdList        []int
-	TotalActualAmount float64
-	TotalCount        int
 }
 
 // 查询的基础函数
@@ -51,10 +48,14 @@ func QueryCommonFuncApi(ctx *context.Context, api string, startTime, endTime int
 				return model.HandlerErrorRes(model.ErrorLoggerType(api, err)), nil, err
 			} else {
 				userList := []int{}
+				var totalTimeConsuming float64
 				for _, v := range res.Data.List {
 					userList = append(userList, v.UserId)
+					// 计算每笔订单的耗时
+					totalTimeConsuming += utils.CalculateMinutesFromTimestamps(v.CreateTime, v.LastUpdateTime)
 				}
-				fmt.Printf("提现总订单数:%d,提现实际总金额：%.2f\n", res.Data.TotalCount, res.Data.Summary.TotalActualAmount)
+				count := res.Data.TotalCount
+				fmt.Printf("提现总订单数:%d,提现实际总金额：%.2f,平均每笔订单的耗时分钟:%2.f\n", count, res.Data.Summary.TotalActualAmount, totalTimeConsuming/float64(count))
 				return resp, userList, nil
 			}
 		}

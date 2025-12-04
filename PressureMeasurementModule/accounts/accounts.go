@@ -1,6 +1,10 @@
 package accounts
 
 import (
+	"autoTest/API/adminApi/login"
+	memberlist "autoTest/API/adminApi/memberList/memberList"
+	"autoTest/store/config"
+	"autoTest/store/logger"
 	"bufio"
 	"encoding/csv"
 	"fmt"
@@ -31,135 +35,98 @@ func LoadFromCSV(path string) {
 }
 
 func Next() string {
+	if len(accounts) == 0 {
+		panic("账号池为空！")
+	}
 	i := atomic.AddUint64(&idx, 1) % uint64(len(accounts))
 	return accounts[i]
 }
 
-// 写入csv
-// SafeCSVWriter 线程安全的 CSV 写入器
+// =============================================================================
+// SafeCSVWriter 定义了一个线程安全的 CSV 写入器
+// =============================================================================
+
+// SafeCSVWriter 结构体
 type SafeCSVWriter struct {
-	file   *os.File
-	writer *csv.Writer
-	mu     sync.Mutex // 保护 writer.Flush() 和 writer.Write()
-	wg     sync.WaitGroup
-	errCh  chan error    // 收集写入过程中的错误
-	done   chan struct{} // 通知后台 flusher 退出
+	file  *os.File    // 目标文件句柄
+	csvW  *csv.Writer // 标准 csv.Writer
+	mu    sync.Mutex  // 用于保护对 csvW 的写入操作
+	errCh chan error  // 错误通道，用于接收异步写入的错误
 }
 
-// NewSafeCSVWriter 创建一个安全的 CSV 写入器
-// filename: CSV 文件路径（不存在会创建，已存在会追加）
-// bufferSize: 内部错误通道缓冲大小，建议 100~10000
-func NewSafeCSVWriter(filename string, bufferSize int) (*SafeCSVWriter, error) {
-	// O_APPEND 保证多进程下也能安全追加（配合文件锁更佳，这里先用 mutex 保证单进程多协程安全）
-	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+// NewSafeCSVWriter 创建并初始化 SafeCSVWriter
+func NewSafeCSVWriter(filename string, errorChanSize int) (*SafeCSVWriter, error) {
+	// 创建或截断文件
+	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return nil, err
 	}
 
-	w := csv.NewWriter(file)
-	// 根据实际需求调整分隔符，例如：w.Comma = ';'
+	writer := csv.NewWriter(file)
+	writer.Comma = ',' // 默认使用逗号作为分隔符
 
-	scw := &SafeCSVWriter{
-		file:   file,
-		writer: w,
-		errCh:  make(chan error, bufferSize),
-		done:   make(chan struct{}),
-	}
-
-	// 启动后台自动 Flush（每 500ms 或者缓冲区满时刷新）
-	go scw.autoFlush()
-
-	return scw, nil
+	return &SafeCSVWriter{
+		file:  file,
+		csvW:  writer,
+		errCh: make(chan error, errorChanSize),
+	}, nil
 }
 
-// autoFlush 后台定时 Flush，防止数据长时间滞留在内存
-func (s *SafeCSVWriter) autoFlush() {
-	ticker := time.NewTicker(500 * time.Millisecond)
-	defer ticker.Stop()
+// Write 是线程安全的写入方法。它只写入一行。
+func (w *SafeCSVWriter) Write(record []string) error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
-	for {
+	// 写入记录
+	if err := w.csvW.Write(record); err != nil {
+		// 如果写入失败，将错误发送到错误通道
 		select {
-		case <-ticker.C:
-			s.mu.Lock()
-			s.writer.Flush()
-			if err := s.writer.Error(); err != nil {
-				s.errCh <- err
-			}
-			s.mu.Unlock()
-		case <-s.done:
-			return
+		case w.errCh <- err:
+			// 错误发送成功
+		default:
+			// 错误通道已满，避免阻塞，打印日志
+			log.Printf("警告：错误通道已满，丢弃写入错误: %v", err)
 		}
+		return err // 同时返回错误给调用者
 	}
+	return nil
 }
 
-// Write 单行写入（线程安全）
-// record: []string 类型的字段切片
-func (s *SafeCSVWriter) Write(record []string) error {
-	s.wg.Add(1)
-	// 这里使用非阻塞发送，如果缓冲满直接同步写入，防止 goroutine 泄漏
-	select {
-	case s.errCh <- nil: // 占位，后面统一处理错误
-	default:
+// Close 关闭文件和 CSV 写入器，并确保所有缓冲数据落盘。
+func (w *SafeCSVWriter) Close() error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	// 强制将缓冲数据写入文件
+	w.csvW.Flush()
+	if err := w.csvW.Error(); err != nil {
+		w.file.Close()
+		close(w.errCh)
+		return fmt.Errorf("CSV Flush 错误: %w", err)
 	}
 
-	s.mu.Lock()
-	err := s.writer.Write(record)
-	// 立即 Flush 可以保证顺序，但性能低；这里选择写完后交给后台定时 Flush
-	if err != nil {
-		s.errCh <- err
+	// 关闭文件句柄
+	if err := w.file.Close(); err != nil {
+		close(w.errCh)
+		return fmt.Errorf("关闭文件失败: %w", err)
 	}
-	s.mu.Unlock()
 
-	s.wg.Done()
-	return err // 返回错误让调用方决定是否继续
+	// 最终关闭错误通道
+	close(w.errCh)
+	return nil
 }
 
-// WriteAll 批量写入（线程安全）
-func (s *SafeCSVWriter) WriteAll(records [][]string) error {
-	s.wg.Add(1)
-	defer s.wg.Done()
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	return s.writer.WriteAll(records) // WriteAll 内部已经做了 Flush
+// Error 返回错误通道，供外部监听写入错误
+func (w *SafeCSVWriter) Error() <-chan error {
+	return w.errCh
 }
 
-// Error 返回错误通道，调用方可选择监听
-func (s *SafeCSVWriter) Error() <-chan error {
-	return s.errCh
-}
+// =============================================================================
+// 改造后的并发写入函数
+// =============================================================================
 
-// Close 关闭写入器，保证所有数据落盘
-func (s *SafeCSVWriter) Close() error {
-	// 停止后台 flusher
-	close(s.done)
-
-	// 等待所有 Write 完成
-	s.wg.Wait()
-
-	s.mu.Lock()
-	s.writer.Flush()
-	err := s.writer.Error()
-	if err != nil {
-		s.errCh <- err
-	}
-	s.mu.Unlock()
-
-	close(s.errCh)
-
-	fileErr := s.file.Close()
-	if err != nil {
-		return err
-	}
-	return fileErr
-}
-
-// WriteConcurrently 并发安全地将数据写入 CSV 文件
-// data:        需要写入的字符串切片，每条字符串代表一行（会自动按逗号分割，或你传入 [][]string）
-// concurrency: 并发协程数量（建议 10~200，根据机器和磁盘性能调整）
-// filename:    目标 CSV 文件路径
-// 返回错误信息（如果有）
+// WriteConcurrently 并发地将数据切片中的独立数字（由空格分隔）
+// 一行一行写入到 CSV 文件中。
 func WriteConcurrently(data []string, concurrency int, filename string) error {
 	// 1. 创建线程安全的 CSV 写入器
 	writer, err := NewSafeCSVWriter(filename, concurrency*10) // 错误通道缓冲大一点
@@ -167,70 +134,114 @@ func WriteConcurrently(data []string, concurrency int, filename string) error {
 		return fmt.Errorf("创建 CSV 写入器失败: %w", err)
 	}
 
-	// 2. 可选：监听写入错误
+	// 2. 监听写入错误（在后台协程运行）
 	go func() {
-		for err := range writer.Error() {
-			if err != nil {
-				log.Printf("CSV 写入错误: %v", err)
-			}
+		for csvErr := range writer.Error() {
+			// 这里我们只记录错误，不中断主流程
+			log.Printf("CSV 写入器捕获到错误: %v", csvErr)
 		}
 	}()
 
 	// 3. 启动并发写入
 	var wg sync.WaitGroup
-	taskCh := make(chan string, concurrency*2) // 任务通道带点缓冲
+	// 任务通道，用于发送单个数字 (写入任务)
+	taskCh := make(chan string, concurrency*4)
 
 	// 启动 worker 协程
 	for i := 0; i < concurrency; i++ {
 		wg.Add(1)
 		go func(workerID int) {
 			defer wg.Done()
-			for line := range taskCh {
-				// 默认按逗号分割字段，你也可以改成其他逻辑
-				fields := strings.Split(line, ",")
-				// 可选：清理空字段或 trim 空格
-				for i := range fields {
-					fields[i] = strings.TrimSpace(fields[i])
-				}
+			for numberStr := range taskCh {
+				// 核心改造：将单个数字作为 CSV 的一行（一个字段）写入
+				fields := []string{numberStr}
 
 				if err := writer.Write(fields); err != nil {
-					log.Printf("worker %d 写入失败 [%s]: %v", workerID, line, err)
+					// 注意：这里的错误已经被 writer.Error() 监听了，但同时返回给 worker
+					// 也可以在这里 log，确保信息不丢失。
+					log.Printf("worker %d 写入任务失败 [%s]: %v", workerID, numberStr, err)
 				}
 			}
 		}(i)
 	}
 
-	// 发送所有任务
-	for _, line := range data {
-		taskCh <- line
-	}
-	close(taskCh) // 通知 worker 退出
+	// 4. 发送所有任务 (在新协程中执行，以便主线程可以等待 worker)
+	totalRowsSent := 0
+	startTime := time.Now()
 
-	// 等待所有写入完成
+	go func() {
+		defer close(taskCh) // 任务发送完毕后，关闭通道
+
+		// 遍历输入的每一行字符串
+		for _, line := range data {
+			// 使用 strings.Fields 按空格分割出所有非空数字
+			numbers := strings.Fields(line)
+
+			// 将每个数字作为一个独立任务发送
+			for _, num := range numbers {
+				// 确保数据非空（strings.Fields 已经处理了大部分情况）
+				if num != "" {
+					taskCh <- num
+					totalRowsSent++
+				}
+			}
+		}
+
+		fmt.Printf("任务发送完成，总计生成 %d 个独立写入任务，耗时 %s。\n",
+			totalRowsSent, time.Since(startTime))
+	}()
+
+	// 5. 等待所有 worker 协程完成工作
 	wg.Wait()
 
-	// 最终关闭，确保所有数据落盘
+	// 6. 最终关闭，确保所有数据落盘
 	if err := writer.Close(); err != nil {
 		return fmt.Errorf("关闭 CSV 写入器失败: %w", err)
 	}
 
-	fmt.Printf("成功并发写入 %d 行数据到 %s（使用 %d 个协程）\n", len(data), filename, concurrency)
+	fmt.Printf("成功并发写入 %d 行数据到 %s（使用 %d 个协程）。\n", totalRowsSent, filename, concurrency)
 	return nil
 }
 
-// 写入示例
-// func main() {
-//     // 模拟 10 万条数据
-//     data := make([]string, 0, 100000)
-//     for i := 0; i < 100000; i++ {
-//         data = append(data, fmt.Sprintf("%d,用户%d,Beijing,2025-12-01 %02d:%02d:%02d",
-//             i, i, i/3600, (i/60)%60, i%60)
-//     }
+// 启动写入到csv中
+// 需要确保写入的数据是账号，有充值，改过密码
+func RunWirteCsv() {
+	userList := make([]int64, 0, 1000)
+	// 后台登录
+	if ctx, err := login.RunAdminSitLogin(); err != nil {
+		logger.LogError("csv写入的后台登录失败", err)
+		return
+	} else {
+		// 获取后台用户列表的userid
+		if resp, UserInfo, err := memberlist.GetUserListApi(ctx, 1, 40, 0); err != nil {
+			logger.LogError("csv写入的获取用户列表录失败", err)
+		} else {
+			logger.Logger.Info("csv写入的获取用户列表状态", resp.Msg)
+			for _, v := range UserInfo {
+				userList = append(userList, v.UserId)
+			}
+			// 进行用户的修改密码和充值
+			if len(userList) <= 0 {
+				logger.Logger.Warn("会员id列表的值为空")
+				return
+			}
+			if err := BatchUpdateUsers(ctx, userList); err != nil {
+				logger.Logger.Warn("会员id多线程执行失败")
+			}
+			// 返回用户的账号列表
+			userNameList := make([]string, 0, 1000)
+			for _, v := range userList {
+				if _, username, err := memberlist.GetUserAmount(ctx, int(v)); err != nil {
+					logger.Logger.Warn("用户id返回用户账号转换失败", err)
+					continue
+				} else {
+					userNameList = append(userNameList, username)
+				}
+			}
+			//fmt.Println("修改号的账号列表", userNameList)
+			//
+			WriteConcurrently(userNameList, 5, config.CSVADDR)
+		}
+	}
 
-//     // 一键并发写入！协程数量自己定
-//     if err := WriteConcurrently(data, 50, "users.csv"); err != nil {
-//         log.Fatal("写入失败:", err)
-//     }
-
-//     fmt.Println("全部完成！")
-// }
+}

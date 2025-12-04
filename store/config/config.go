@@ -96,7 +96,7 @@ const (
 	SiteMessageConcurrent = 3                                                   // 站内信并发
 	WithdrawPassword      = "123456"                                            // 提现密码
 	Remark                = "carey4399"                                         // 备注信息
-	StartTime             = "2025-11-29 00:00:00"                               // 查询开始时间
-	EndTime               = "2025-11-29 23:59:59"                               // 查询结束时间
+	StartTime             = "2025-12-03 00:00:00"                               // 查询开始时间
+	EndTime               = "2025-12-03 23:59:59"                               // 查询结束时间
 	CSVADDR               = "./PressureMeasurementModule/accounts/accounts.csv" // csv的地址
 )

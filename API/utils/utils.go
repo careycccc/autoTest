@@ -266,3 +266,19 @@ func SliceUnique[T comparable](slice []T) []T {
 	}
 	return result
 }
+
+// CalculateMinutesFromTimestamps 接受两个毫秒级时间戳（int64），
+// 计算它们之间相差的分钟数（float64）。
+// 这里的 duration = endTimeMs - startTimeMs。
+func CalculateMinutesFromTimestamps(startTimeMs int64, endTimeMs int64) float64 {
+	// 1. 计算时间戳差值 (毫秒)
+	diffMs := endTimeMs - startTimeMs
+
+	// 2. 将毫秒差值转换为 time.Duration 类型。
+	// time.Millisecond 是一个 time.Duration 常量，表示 1 毫秒。
+	// 通过乘以 diffMs，我们将 int64 转换为相应的 time.Duration。
+	duration := time.Duration(diffMs) * time.Millisecond
+
+	// 3. 使用 time.Duration 的 Minutes() 方法转换为浮点数分钟
+	return duration.Minutes()
+}

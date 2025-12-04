@@ -1,10 +1,10 @@
 package invitationcarousel
 
 import (
-	financialmanagement "autoTest/API/adminApi/financialManagement"
 	adminLogin "autoTest/API/adminApi/login"
 	memberlist "autoTest/API/adminApi/memberList/memberList"
 	lotterygameapi "autoTest/API/betApi/LotteryGameApi"
+	commfunc "autoTest/API/commFunc"
 	login "autoTest/API/deskApi/loginApi"
 	registerapi "autoTest/API/deskApi/registerApi"
 	utils "autoTest/API/utils"
@@ -363,24 +363,7 @@ func RunWhille(userAmount string, yqCode string, monenyCount float64) error {
 			return err
 		}
 		logger.Logger.Info("userid的值", userId)
-		adminToken := *ctxAdminToken
-		wg := &sync.WaitGroup{}
-		wg.Add(2)
-		// 根据id进行充值
-		go func(wg *sync.WaitGroup, ctxToUse *context.Context) {
-			defer wg.Done()
-			financialmanagement.ArtificialRechargeFunc(ctxToUse, int(userId), monenyCount, 2)
-		}(wg, &adminToken)
-
-		// 修改用户密码
-		go func(wg *sync.WaitGroup, ctxToUse *context.Context) {
-			defer wg.Done()
-			memberlist.UpdatePassword(ctxToUse, userId, config.SUB_PWD)
-		}(wg, &adminToken)
-
-		wg.Wait()
-		logger.Logger.Info("充值金额", monenyCount)
-		logger.Logger.Info("成功修改密码", config.SUB_PWD)
+		commfunc.UpdatePasswordAndToUp(ctxAdminToken, userId, monenyCount)
 		time.Sleep(time.Second * 3)
 		// 充值结束后进行投注
 		gameCode, betContent, amount, betMultiple := lotterygameapi.GetBetResult()

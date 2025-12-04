@@ -32,7 +32,7 @@ func GetYesterdayUserAmont() {
 	)
 	TotalMoneny := 0.0   // 总超时赔付的金额
 	TotalOrderCount := 0 // 总超时赔付的的订单数
-	fmt.Println("超时赔付领取成功的数据:")
+	logger.Logger.Info("超时赔付领取成功的数据:")
 	for _, r := range result {
 		fmt.Printf("用户 %d 有 %d 笔订单，明细：[", r.UserID, r.OrderCount)
 		for i, a := range r.Amounts {

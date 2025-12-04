@@ -25,7 +25,7 @@ type withDrawaInfo struct {
 
 // 提现
 func RunWithDrawCase() {
-	userName := "911201199712"
+	userName := "911203199741"
 
 	_, deskCtx, err := registerapi.GeneralAgentRegister(userName)
 	if err != nil {
@@ -124,7 +124,12 @@ func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaas
 	canWithDrawCaseList := filterGreaterOrEqual(*money, allwithdraw.WithdrawAmountList)
 PT:
 	canWithDrawCaseListLen := len(canWithDrawCaseList)
-	i := utils.RandInt(0, canWithDrawCaseListLen-1)
+	i := 0
+	if canWithDrawCaseListLen == 1 {
+		i = 0
+	} else {
+		i = utils.RandInt(0, canWithDrawCaseListLen-1)
+	}
 	// 随机出来的值 大于 今日可提现的总金额
 	if canWithDrawCaseList[i] > allwithdraw.UserTodayWithdrawAmount {
 		goto PT
@@ -133,7 +138,12 @@ PT:
 	// 随机提现的大类
 	WithdrawCategoryListLen := len(allwithdraw.WithdrawCategoryList)
 PT2:
-	j := utils.RandInt(0, WithdrawCategoryListLen-1)
+	j := 0
+	if WithdrawCategoryListLen == 1 {
+		j = 0
+	} else {
+		j = utils.RandInt(0, WithdrawCategoryListLen-1)
+	}
 	if allwithdraw.WithdrawCategoryList[j].WithdrawType == "UPI" {
 		// 提现类型目前不支持upi
 		goto PT2
