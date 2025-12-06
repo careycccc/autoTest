@@ -110,7 +110,6 @@ func PostRequestCofig(payload map[string]interface{}, base_url, api string, args
 		log.Fatalf("发送请求失败~~~~~~~: %v", err)
 		return nil, nil, err
 	}
-
 	defer resp.Body.Close()
 	// fmt.Println("响应状态码", resp.StatusCode)
 	respBody, resp, err := handlerCode(resp)

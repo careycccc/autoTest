@@ -1,6 +1,7 @@
 package withdrawcash
 
 import (
+	withdrawalorders "autoTest/API/adminApi/financialManagement/withdrawalOrders"
 	addwallet "autoTest/API/adminApi/memberList/addWallet"
 	recoversaasbalance "autoTest/API/deskApi/WithdrawCash/RecoverSaasBalance"
 	getuserinfo "autoTest/API/deskApi/getUserinfo"
@@ -25,7 +26,7 @@ type withDrawaInfo struct {
 
 // 提现
 func RunWithDrawCase() {
-	userName := "911203199741"
+	userName := "911204199711"
 
 	_, deskCtx, err := registerapi.GeneralAgentRegister(userName)
 	if err != nil {
@@ -94,9 +95,9 @@ func RunWithDrawCase() {
 		// 提现逻辑
 		withDrawaChan := make(chan *withDrawaInfo, 1)
 		WithDrawCase(deskCtx, <-moneyChan, <-allWithdrawChan, withDrawaChan)
-		//withDrawa := <-withDrawaChan
+		withDrawa := <-withDrawaChan
 		// 下单
-		//withdrawalorders.RunWithdraw(userid, withDrawa.withDrawaType, withDrawa.withDrawaAmont, withDrawa.withDrawaAmont)
+		withdrawalorders.RunWithdraw(userid, withDrawa.withDrawaType, withDrawa.withDrawaAmont, withDrawa.withDrawaAmont)
 	}
 
 }

@@ -5,41 +5,113 @@ import (
 	memberlist "autoTest/API/adminApi/memberList/memberList"
 	"autoTest/store/config"
 	"autoTest/store/logger"
-	"bufio"
 	"encoding/csv"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
 	"sync"
-	"sync/atomic"
-	"time"
 )
 
 var accounts []string
 var idx uint64
 
-// 读取csv
-func LoadFromCSV(path string) {
-	f, _ := os.Open(path)
-	defer f.Close()
-	s := bufio.NewScanner(f)
-	s.Scan() // 跳标题
-	for s.Scan() {
-		if u := s.Text(); u != "" {
-			accounts = append(accounts, u)
-		}
-	}
-	// 会自动跳过第一个账号
-	log.Printf("加载 %d 个账号", len(accounts))
+// SummaryItem 结构体用于存放处理后的单行数据（可以根据实际需求替换为 OrderItem 或其他结构体）
+type ProcessedRecord struct {
+	Record   []string
+	WorkerID int
 }
 
-func Next() string {
-	if len(accounts) == 0 {
-		panic("账号池为空！")
+// ConcurrentCSVReader 封装了标准的 csv.Reader 并添加了互斥锁，确保并发安全读取
+type ConcurrentCSVReader struct {
+	reader *csv.Reader
+	mu     sync.Mutex // 互斥锁，用于保护读取状态
+}
+
+// NewConcurrentCSVReader 构造函数
+func NewConcurrentCSVReader(r io.Reader) *ConcurrentCSVReader {
+	return &ConcurrentCSVReader{
+		reader: csv.NewReader(r),
 	}
-	i := atomic.AddUint64(&idx, 1) % uint64(len(accounts))
-	return accounts[i]
+}
+
+// Read 线程安全地从 CSV 中读取一行记录
+func (c *ConcurrentCSVReader) Read() (record []string, err error) {
+	// 锁定互斥锁，开始临界区
+	c.mu.Lock()
+	defer c.mu.Unlock() // 确保在函数返回时释放锁
+
+	return c.reader.Read()
+}
+
+// ProcessCSVConcurrently 是最终封装的函数。
+// 它接收 CSV 文件路径和希望启动的工作 Goroutine 数量。
+// 返回处理后的记录切片 (这里使用 [][]string，方便演示) 和错误信息。
+func ProcessCSVConcurrently(filePath string, numWorkers int) ([]string, error) {
+	// 1. 打开文件
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("无法打开文件 %s: %w", filePath, err)
+	}
+	defer file.Close() // 确保文件关闭
+
+	// 2. 创建并发安全的 Reader
+	concurrentReader := NewConcurrentCSVReader(file)
+
+	// 可选：读取并忽略 Header
+	if _, err := concurrentReader.Read(); err != nil && err != io.EOF {
+		return nil, fmt.Errorf("读取 CSV Header 失败: %w", err)
+	}
+
+	var wg sync.WaitGroup
+	// 使用 Channel 收集结果，Channel 的容量应预估
+	resultChan := make(chan []string, 100)
+
+	// 3. 启动工作 Goroutine
+	for i := 1; i <= numWorkers; i++ {
+		wg.Add(1)
+		go func(workerID int) {
+			defer wg.Done()
+
+			for {
+				// Mutex 保证读取安全
+				record, err := concurrentReader.Read()
+
+				if err == io.EOF {
+					// 读取完毕
+					return
+				}
+				if err != nil {
+					// 记录读取错误并退出当前 Goroutine
+					fmt.Printf("[Worker %d] 读取出错: %v\n", workerID, err)
+					return
+				}
+
+				// --- 4. 数据处理和发送结果 ---
+				// 模拟数据处理逻辑 (例如：类型转换、业务计算等)
+				//processedRecord := append([]string{fmt.Sprintf("Worker-%d", workerID)}, record...)
+
+				// 将处理后的结果安全地发送到 Channel
+				resultChan <- record
+			}
+		}(i)
+	}
+
+	// 5. 启动一个 Goroutine 等待所有工作完成并关闭 Channel
+	go func() {
+		wg.Wait()
+		close(resultChan) // 确保在所有数据发送完毕后关闭 Channel
+	}()
+
+	// 6. 从 Channel 中收集所有结果到切片中
+	var allFlatRecords []string // 声明为一维切片
+	for record := range resultChan {
+		// 遍历每一行记录，将其所有字段附加到一维切片中
+		allFlatRecords = append(allFlatRecords, record...)
+	}
+
+	return allFlatRecords, nil
 }
 
 // =============================================================================
@@ -167,7 +239,6 @@ func WriteConcurrently(data []string, concurrency int, filename string) error {
 
 	// 4. 发送所有任务 (在新协程中执行，以便主线程可以等待 worker)
 	totalRowsSent := 0
-	startTime := time.Now()
 
 	go func() {
 		defer close(taskCh) // 任务发送完毕后，关闭通道
@@ -187,8 +258,8 @@ func WriteConcurrently(data []string, concurrency int, filename string) error {
 			}
 		}
 
-		fmt.Printf("任务发送完成，总计生成 %d 个独立写入任务，耗时 %s。\n",
-			totalRowsSent, time.Since(startTime))
+		fmt.Printf("任务发送完成，总计生成 %d 个独立写入任务。\n",
+			totalRowsSent)
 	}()
 
 	// 5. 等待所有 worker 协程完成工作
@@ -213,10 +284,11 @@ func RunWirteCsv() {
 		return
 	} else {
 		// 获取后台用户列表的userid
-		if resp, UserInfo, err := memberlist.GetUserListApi(ctx, 1, 40, 0); err != nil {
-			logger.LogError("csv写入的获取用户列表录失败", err)
+		if resp, UserInfo, err := memberlist.GetUserListApi(ctx, 1, 60, 0); err != nil {
+			logger.Logger.Warn("csv写入的获取用户列表录失败", err)
+			return
 		} else {
-			logger.Logger.Info("csv写入的获取用户列表状态", resp.Msg)
+			fmt.Println("csv写入", resp)
 			for _, v := range UserInfo {
 				userList = append(userList, v.UserId)
 			}
@@ -228,6 +300,7 @@ func RunWirteCsv() {
 			if err := BatchUpdateUsers(ctx, userList); err != nil {
 				logger.Logger.Warn("会员id多线程执行失败")
 			}
+
 			// 返回用户的账号列表
 			userNameList := make([]string, 0, 1000)
 			for _, v := range userList {

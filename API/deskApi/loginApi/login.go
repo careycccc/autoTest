@@ -54,7 +54,10 @@ func LoginY1(ctx context.Context, username, password string) (*model.Response, *
 // 主要是返回上下文
 func ReturnContextLoginY1(username, password string) (*context.Context, error) {
 	ctx := context.Background()
-	if _, ctxToken, err := LoginY1(ctx, username, password); err != nil {
+	if resp, ctxToken, err := LoginY1(ctx, username, password); err != nil {
+		logger.LogError("LoginY1['/api/Home/Login']登录失败", err)
+		return nil, err
+	} else if resp.Code != 0 || resp.Msg != "Succeed" {
 		logger.LogError("LoginY1['/api/Home/Login']登录失败", err)
 		return nil, err
 	} else {

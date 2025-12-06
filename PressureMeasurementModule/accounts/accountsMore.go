@@ -27,7 +27,7 @@ type TaskPayload struct {
 // 2. 封装的核心处理函数
 // -----------------------------------------------------------
 
-// BatchUpdateUsers 接收上下文和 ID 切片，使用 10 个并发处理
+// 批量执行任务，使用 10 个并发处理
 func BatchUpdateUsers(ctx *context.Context, userIds []int64) error {
 	// A. 定义并发池的 Worker 逻辑
 	// 这个函数会被 ants 池里的协程反复调用
@@ -60,8 +60,6 @@ func BatchUpdateUsers(ctx *context.Context, userIds []int64) error {
 		wg.Add(1)
 
 		// 生成随机金额 (在主协程生成，避免并发锁竞争)
-		// 范围 0.00 ~ 100.00
-		//money := float64(rand.Intn(10000)) / 100.0
 		if money, err := sutils.GenerateRandomInt(config.MIN_MONENY, config.MAX_MONENY); err != nil {
 			return err
 		} else {

@@ -4,6 +4,7 @@ import (
 	login "autoTest/API/adminApi/login"
 	desklogin "autoTest/API/deskApi/loginApi"
 	"autoTest/store/config"
+	"autoTest/store/logger"
 	"autoTest/store/model"
 	"autoTest/store/request"
 	"context"
@@ -155,6 +156,10 @@ func AdminRodAutRequest[P any](ctx *context.Context, api string, payload *P, pay
 		respBody, req, err := request.PostRequestCofig(FlattendMap, base_url, api, headerMap)
 		if err != nil {
 			return nil, nil, fmt.Errorf("请求失败:%s", err)
+		}
+		if string(respBody) == "" {
+			logger.Logger.Warn("AdminRodAutRequest请求返回为空")
+			return nil, nil, fmt.Errorf("AdminRodAutRequest请求返回为空:%s", err)
 		}
 		var result model.Response
 		err = json.Unmarshal([]byte(string(respBody)), &result)

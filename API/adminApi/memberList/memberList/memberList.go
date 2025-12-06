@@ -148,6 +148,12 @@ type GetUserListStruct struct {
 	model.QueryPayloadStruct
 }
 
+type GetUserVipListStruct struct {
+	VipLevel any `json:"vipLevel"` // vip等级
+	UserType any `json:"userType"` // 用户类型
+	model.QueryPayloadStruct
+}
+
 type UserInfo struct {
 	UserId           int64   `json:"userId"`
 	Account          string  `json:"account"`
@@ -191,6 +197,7 @@ func GetUserListApi(ctx *context.Context, pageSize, userNumber int, userType int
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList请求失败", err)), nil, err
 	} else {
+
 		// 提取用户id
 		var response GetUserListResponseStruct
 		if err := json.Unmarshal(respBoy, &response); err != nil {
@@ -199,6 +206,42 @@ func GetUserListApi(ctx *context.Context, pageSize, userNumber int, userType int
 		if resp, err := model.ParseResponse(respBoy); err != nil {
 			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList解析失败", err)), nil, err
 		} else {
+
+			userList := make([]*UserInfo, userNumber)
+			for i := 0; i < userNumber; i++ {
+				userList[i] = &response.Data.List[i]
+			}
+			return resp, userList, nil
+		}
+	}
+}
+
+/*
+userNumber 传入一个数字，返回对应数量的用户列表的详细信息
+userType 0 正式账号 1 测试账号 2 游客账号
+vip等级
+*
+*/
+func GetUserVipListApi(ctx *context.Context, pageSize, userNumber int, userType int8, vipLevel int) (*model.Response, []*UserInfo, error) {
+	api := "/api/Users/GetPageList"
+	timestamp, random, language := request.GetTimeRandom()
+	payloadStruct := &GetUserVipListStruct{}
+	payloadList := []interface{}{vipLevel, userType, pageSize, userNumber, "Desc", random, language, "", timestamp}
+	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
+		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList请求失败", err)), nil, err
+	} else {
+		// 提取用户id
+		var response GetUserListResponseStruct
+		if err := json.Unmarshal(respBoy, &response); err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList提取用户列表解析失败", err)), nil, err
+		}
+		if resp, err := model.ParseResponse(respBoy); err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList解析失败", err)), nil, err
+		} else {
+			if len(response.Data.List) == 0 || response.Data.List == nil {
+				logger.Logger.Warn("获取用户列表为空")
+				return resp, nil, nil
+			}
 			userList := make([]*UserInfo, userNumber)
 			for i := 0; i < userNumber; i++ {
 				userList[i] = &response.Data.List[i]

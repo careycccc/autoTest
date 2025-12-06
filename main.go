@@ -1,7 +1,7 @@
 package main
 
 import (
-	withdrawaltimeoutcompensation "autoTest/API/adminApi/activeManagement/WithdrawalTimeoutCompensation"
+	dailycheckin "autoTest/API/adminApi/activeManagement/dailyCheckIn"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -29,9 +29,9 @@ func main() {
 	// 	logger.LogError("登录失败", err)
 	// 	return
 	// }
-	// invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
+	//invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
 	// invitationcarousel.RunSpinInvitedWheel() // 当前用户邀请转盘自动邀请下级
-	//invitecode.RunInvite() // 多级下级邀请
+	// invitecode.RunInvite() // 多级下级邀请
 	// withdrawcash.RunWithDrawCase() // 提现
 	// topup.RunRechargeGoods()
 	// GameBetOrders.RunGameBetOrders()              // 后台投注订单的查询
@@ -39,8 +39,9 @@ func main() {
 	// chickenroadgame.RunChickenRoadGame() // 鸡路小游戏
 	// withdrawalorders.RunWithDrawCase() // 查询订单数据
 	// withdrawalorders.RunWithLockDrawCase() // 查询提现锁定的数据
-	withdrawaltimeoutcompensation.GetYesterdayUserAmont()     //获取昨天的提现超时赔付的账变的账号以及金额
-	withdrawaltimeoutcompensation.ExecelWithdrawHistoryInfo() // 提现超时赔付
+	//withdrawaltimeoutcompensation.GetYesterdayUserAmont()     //获取昨天的提现超时赔付的账变的账号以及金额
+	//withdrawaltimeoutcompensation.ExecelWithdrawHistoryInfo() // 提现超时赔付
 	// pressuremeasurementmodule.RunPressusreModle() // 运行压测
 	// accounts.RunWirteCsv() // 会员列表的数据写入到csv中
+	dailycheckin.RunDailyCheckInActivity() // 每日签到活动
 }

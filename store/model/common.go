@@ -141,3 +141,11 @@ func ErrorLoggerType(s string, err error) error {
 	errs := fmt.Errorf("%s-%s", s, err)
 	return errs
 }
+
+// 传入返回的响应，进行状态判断 是否真的成功
+func IsSuccess(resp *Response) bool {
+	if resp.Code == 0 && resp.Msg == "Succeed" {
+		return true
+	}
+	return false
+}
