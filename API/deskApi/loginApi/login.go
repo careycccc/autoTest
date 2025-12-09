@@ -59,6 +59,7 @@ func ReturnContextLoginY1(username, password string) (*context.Context, error) {
 		return nil, err
 	} else if resp.Code != 0 || resp.Msg != "Succeed" {
 		logger.LogError("LoginY1['/api/Home/Login']登录失败", err)
+		logger.Logger.Warn("LoginY1['/api/Home/Login']登录失败的信息为：", resp)
 		return nil, err
 	} else {
 		return ctxToken, nil

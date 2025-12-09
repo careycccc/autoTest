@@ -91,14 +91,17 @@ func GenerateSignatureFromJSON(jsonInput interface{}, verifyPwd *string) (string
 // 运行检测签名
 func RunCheckSign() {
 	jsonStr := `{
-  "browserId": "6aed08b5558eacb5d97f7b8441ac99f4",
-  "language": "en",
-  "loginType": "Mobile",
+  "userName": "911208199708",
+  "inviteCode": "5KWVU3W",
   "password": "qwer1234",
-  "random": 203305427707,
-  "track": "",
-  "userName": "911201199711"
-}`
+  "code": "141373",
+  "loginType": "Mobile",
+  "language": "en",
+  "random": 472521829598,
+  "signature": "",
+  "timestamp": 1765171927
+}
+`
 
 	sig, _ := GenerateSignatureFromJSON(jsonStr, nil)
 	fmt.Println(sig)

@@ -1,7 +1,7 @@
 package main
 
 import (
-	dailycheckin "autoTest/API/adminApi/activeManagement/dailyCheckIn"
+	"autoTest/PressureMeasurementModule/f1"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -43,5 +43,7 @@ func main() {
 	//withdrawaltimeoutcompensation.ExecelWithdrawHistoryInfo() // 提现超时赔付
 	// pressuremeasurementmodule.RunPressusreModle() // 运行压测
 	// accounts.RunWirteCsv() // 会员列表的数据写入到csv中
-	dailycheckin.RunDailyCheckInActivity() // 每日签到活动
+	// dailycheckin.RunDailyCheckInActivity() // 每日签到活动
+	//checksign.RunCheckSign()
+	f1.RunTasks()
 }

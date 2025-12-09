@@ -54,7 +54,12 @@ func DeskTenAuthorRequest[P any](ctx *context.Context, api string, payload *P, p
 		if err != nil {
 			return nil, nil, fmt.Errorf("错误代码反序列化:%s", err)
 		}
-		return respBody, req, nil
+		if model.IsSuccess(&result) {
+			return respBody, req, nil
+		} else {
+			logger.Logger.Warn("响应信息:%s,响应码:%d", result.Msg, result.Code)
+			return nil, nil, err
+		}
 	}
 }
 
@@ -94,7 +99,12 @@ func DeskTrodRegRequest[P any](ctx *context.Context, api string, payload *P, pay
 		if err != nil {
 			return nil, nil, fmt.Errorf("错误代码反序列化:%s", err)
 		}
-		return respBody, req, nil
+		if model.IsSuccess(&result) {
+			return respBody, req, nil
+		} else {
+			logger.Logger.Warn("响应信息:%s,响应码:%d", result.Msg, result.Code)
+			return nil, nil, err
+		}
 	}
 }
 
@@ -126,7 +136,12 @@ func DeskTrodRegRequest2[P any](ctx *context.Context, api string, payload *P, pa
 		if err != nil {
 			return nil, nil, fmt.Errorf("错误代码反序列化:%s", err)
 		}
-		return respBody, req, nil
+		if model.IsSuccess(&result) {
+			return respBody, req, nil
+		} else {
+			logger.Logger.Warn("响应信息:%s,响应码:%d", result.Msg, result.Code)
+			return nil, nil, err
+		}
 	}
 }
 
@@ -166,6 +181,11 @@ func AdminRodAutRequest[P any](ctx *context.Context, api string, payload *P, pay
 		if err != nil {
 			return nil, nil, fmt.Errorf("错误代码反序列化:%s", err)
 		}
-		return respBody, req, nil
+		if model.IsSuccess(&result) {
+			return respBody, req, nil
+		} else {
+			logger.Logger.Warn("响应信息:%s,响应码:%d", result.Msg, result.Code)
+			return nil, nil, err
+		}
 	}
 }

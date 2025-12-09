@@ -26,7 +26,7 @@ type withDrawaInfo struct {
 
 // 提现
 func RunWithDrawCase() {
-	userName := "911204199711"
+	userName := "911208199713"
 
 	_, deskCtx, err := registerapi.GeneralAgentRegister(userName)
 	if err != nil {
@@ -94,16 +94,19 @@ func RunWithDrawCase() {
 	} else {
 		// 提现逻辑
 		withDrawaChan := make(chan *withDrawaInfo, 1)
-		WithDrawCase(deskCtx, <-moneyChan, <-allWithdrawChan, withDrawaChan)
-		withDrawa := <-withDrawaChan
-		// 下单
-		withdrawalorders.RunWithdraw(userid, withDrawa.withDrawaType, withDrawa.withDrawaAmont, withDrawa.withDrawaAmont)
+		if !WithDrawCase(deskCtx, <-moneyChan, <-allWithdrawChan, withDrawaChan) {
+			return
+		} else {
+			// 下单
+			withDrawa := <-withDrawaChan
+			withdrawalorders.RunWithdraw(userid, withDrawa.withDrawaType, withDrawa.withDrawaAmont, withDrawa.withDrawaAmont)
+		}
 	}
 
 }
 
 // 提现
-func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaasbalance.AllWithdraw, ch chan<- *withDrawaInfo) {
+func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaasbalance.AllWithdraw, ch chan<- *withDrawaInfo) bool {
 	// 判断用户是否有钱，每日提现金额是否有值，提现是否有次数，打码量是否满足
 	if *money <= 0.0 {
 		logger.Logger.Warnln("提现获取用户金额小于等于0", nil)
@@ -111,7 +114,7 @@ func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaas
 			withDrawaAmont: 0,
 			withDrawaType:  "",
 		}
-		return
+		return false
 	}
 	if allwithdraw.UserTodayWithdrawCount == 0 || allwithdraw.AmountCoding != 0 {
 		logger.Logger.Warn("用户的提现次数等于0,或者 用户的打码量不等于0", nil)
@@ -119,7 +122,7 @@ func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaas
 			withDrawaAmont: 0,
 			withDrawaType:  "",
 		}
-		return
+		return false
 	}
 	// 要保证提现金额要有大于整个提现list里面的值
 	canWithDrawCaseList := filterGreaterOrEqual(*money, allwithdraw.WithdrawAmountList)
@@ -155,7 +158,7 @@ PT2:
 	// 进行提现
 	if resp, err := WithdrawApplyApi(ctx, canWithDrawCaseList[i], withdrawId, withdrawType); err != nil {
 		logger.LogError("提现失败", err)
-		return
+		return false
 	} else {
 		logger.Logger.Info("提现结果", resp)
 	}
@@ -164,6 +167,7 @@ PT2:
 		withDrawaAmont: canWithDrawCaseList[i],
 		withDrawaType:  withdrawType,
 	}
+	return true
 }
 
 // 返回可以提现的list列表

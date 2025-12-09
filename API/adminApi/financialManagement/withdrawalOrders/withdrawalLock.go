@@ -4,6 +4,7 @@ import (
 	querycommonfunc "autoTest/API/adminApi/financialManagement/withdrawalOrders/QueryCommonFunc"
 	requstmodle "autoTest/requstModle"
 	"autoTest/store/config"
+	"autoTest/store/logger"
 	"autoTest/store/model"
 	"autoTest/store/request"
 	"context"
@@ -56,6 +57,10 @@ func GetWithdrawLockPageListApi(ctx *context.Context, userId int, WithdrawType s
 		if resp, err := model.ParseResponse(respBoy); err != nil {
 			return model.HandlerErrorRes(model.ErrorLoggerType("GetWithdrawLockPageListResponse解析失败", err)), nil, err
 		} else {
+			if len(response.Data.List) == 0 {
+				logger.Logger.Warn("订单的信息为空")
+				return resp, nil, nil
+			}
 			return resp, &Withdrawinfo{
 				orderNo:    response.Data.List[0].OrderNo,
 				createTime: response.Data.List[0].CreateTime,
