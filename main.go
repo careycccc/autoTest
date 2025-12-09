@@ -1,7 +1,7 @@
 package main
 
 import (
-	"autoTest/PressureMeasurementModule/f1"
+	"autoTest/PressureMeasurementModule/boomer"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -42,8 +42,8 @@ func main() {
 	//withdrawaltimeoutcompensation.GetYesterdayUserAmont()     //获取昨天的提现超时赔付的账变的账号以及金额
 	//withdrawaltimeoutcompensation.ExecelWithdrawHistoryInfo() // 提现超时赔付
 	// pressuremeasurementmodule.RunPressusreModle() // 运行压测
-	// accounts.RunWirteCsv() // 会员列表的数据写入到csv中
+	//accounts.RunWirteCsv() // 会员列表的数据写入到csv中
 	// dailycheckin.RunDailyCheckInActivity() // 每日签到活动
 	//checksign.RunCheckSign()
-	f1.RunTasks()
+	boomer.RunTasks()
 }
