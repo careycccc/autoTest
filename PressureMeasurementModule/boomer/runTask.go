@@ -8,35 +8,35 @@ import (
 	"github.com/myzhan/boomer"
 )
 
-var (
-	// 全局信号：登录阶段完成
-	loginDone = make(chan struct{})
-)
-
+// main.go —— 用真实池大小等待
 func RunTasks() {
-	log.Println("完整压测启动：100个真实账号各登录2次 → 等全部完成 → 200人查询VIP")
+	// 阶段1：登录（后台）
+	go boomer.Run(RunLoginPhase())
 
-	// ==================== 阶段1：登录建 token 池 ====================
-	go func() {
-		boomer.Run(RunLoginPhase()) // 登录阶段后台运行
-		// 登录阶段自然结束（所有 goroutine 都 sleep 了）
-		log.Println("登录阶段彻底结束！100 个 token 已准备好")
-		loginDone <- struct{}{} // 发送信号：第一阶段完成
-	}()
+	// 2. 关键！强制设置 10000 并发
+	// 主线程等待真实池大小达到 100
+	log.Println("等待拿到 100 个有效 token...")
+	for {
+		PoolMu.RLock()
+		size := len(TokenPool)
+		PoolMu.RUnlock()
 
-	// 主 goroutine 等待第一阶段彻底结束
-	log.Println("主线程等待登录阶段完成...")
-	<-loginDone // 卡在这里，直到登录阶段发信号
-	log.Println("登录阶段已确认完成，开始进入等待倒计时...")
+		if size >= 100 {
+			log.Printf("成功拿到 %d 个有效 token，进入下一阶段！", size)
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
 
-	// 等待 2 秒
-	log.Println("等待 2 秒后开始查询VIP...")
-	time.Sleep(2 * time.Second)
+	// 等待 6 秒
+	log.Println("等待 6 秒后开始查询VIP...")
+	time.Sleep(6 * time.Second)
 
-	// ==================== 阶段2：200 人查询VIP ====================
-	log.Println("开始查询VIP阶段：200 个虚拟用户（100 token 复用）")
-	boomer.Run(QueryVipTask()) // 这行会阻塞，直到压测结束
+	// 阶段2：200人查询VIP
+	log.Println("开始查询VIP阶段...")
+	boomer.Run(QueryVipTask())
 
-	log.Println("查询VIP压测结束！完整流程结束！")
+	time.Sleep(60 * time.Second)
+	log.Println("完整压测结束！")
 	os.Exit(0)
 }
