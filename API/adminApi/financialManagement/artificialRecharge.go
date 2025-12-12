@@ -1,8 +1,8 @@
 package financialmanagement
 
 import (
+	"autoTest/API/adminApi/login"
 	requstmodle "autoTest/requstModle"
-	"autoTest/store/logger"
 	"autoTest/store/model"
 	"autoTest/store/request"
 	"context"
@@ -32,11 +32,19 @@ func ArtificialRechargeFunc(ctx *context.Context, userid int, rechargeAmount flo
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/ArtificialRechargeRecord/ArtificialRecharge请求失败", err)), err
 	} else {
-		logger.Logger.Info("充值成功的金额", rechargeAmount)
+		// logger.Logger.Info("充值成功的金额", rechargeAmount)
 		if res, err := model.ParseResponse(respBoy); err != nil {
 			return model.HandlerErrorRes(model.ErrorLoggerType("/api/ArtificialRechargeRecord/ArtificialRecharge解析失败", err)), err
 		} else {
 			return res, nil
 		}
+	}
+}
+
+func RunArtificialRechargeFunc() {
+	if ctx, err := login.RunAdminSitLogin(); err != nil {
+		return
+	} else {
+		ArtificialRechargeFunc(ctx, 131564, 120, 1)
 	}
 }

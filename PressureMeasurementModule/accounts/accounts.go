@@ -284,11 +284,10 @@ func RunWirteCsv() {
 		return
 	} else {
 		// 获取后台用户列表的userid
-		if resp, UserInfo, err := memberlist.GetUserListApi(ctx, 5, 200, 0); err != nil {
+		if _, UserInfo, err := memberlist.GetUserListApi(ctx, 10, 200, 0); err != nil {
 			logger.Logger.Warn("csv写入的获取用户列表录失败", err)
 			return
 		} else {
-			fmt.Println("csv写入", resp)
 			for _, v := range UserInfo {
 				userList = append(userList, v.UserId)
 			}

@@ -14,6 +14,7 @@ require (
 	github.com/ozontech/allure-go/pkg/allure v0.7.3
 	github.com/ozontech/allure-go/pkg/framework v0.7.3
 	github.com/panjf2000/ants/v2 v2.11.3
+	github.com/tsenart/vegeta/v12 v12.13.0
 	github.com/xuri/excelize/v2 v2.10.0
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -31,6 +32,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/guptarohit/asciigraph v0.7.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/influxdata/tdigest v0.0.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -51,6 +53,7 @@ require (
 	github.com/richardlehane/msoleps v1.0.4 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
+	github.com/rs/dnscache v0.0.0-20230804202142-fc85eb664529 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
