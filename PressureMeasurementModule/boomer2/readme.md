@@ -1,0 +1,1 @@
+locust --master -f dummy.py --host=http://your-api.com

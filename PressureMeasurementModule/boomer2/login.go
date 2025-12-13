@@ -1,5 +1,4 @@
-// login.go —— v1.6.1 兼容版：失败不计数，成功才计数
-package boomer
+package boomer2
 
 import (
 	login "autoTest/API/deskApi/loginApi"

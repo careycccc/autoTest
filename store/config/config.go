@@ -86,8 +86,8 @@ const (
 	SUB_PWD               = "qwer1234"                                          // 后台修改的密码
 	MIN_MONENY            = 5000                                                // 充值金额的最大值
 	MAX_MONENY            = 10000                                               // 充值金额的最小值
-	SUB_MINNUMBER         = 3                                                   // 下级邀请人数的最小值
-	SUB_MAXMUMBER         = 5                                                   // 下级邀请人数的最大值
+	SUB_MINNUMBER         = 1                                                   // 下级邀请人数的最小值
+	SUB_MAXMUMBER         = 3                                                   // 下级邀请人数的最大值
 	SUB_CONCURRENT        = 3                                                   // 邀请下级的并发数
 	GeneralAgentNumber    = 1                                                   // 邀请转盘的总代数量
 	SUBUSERYAML           = "./subUser.yaml"                                    // 下级用户写入的目录

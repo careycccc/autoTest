@@ -26,7 +26,7 @@ type withDrawaInfo struct {
 
 // 提现
 func RunWithDrawCase() {
-	userName := "911212199721"
+	userName := "911213096990"
 
 	_, deskCtx, err := registerapi.GeneralAgentRegister(userName)
 	if err != nil {
@@ -53,7 +53,6 @@ func RunWithDrawCase() {
 			logger.LogError("获取提现基础信息失败", err)
 			return
 		} else {
-
 			allWithdrawChan <- allWithdraw
 		}
 	}()
@@ -74,15 +73,32 @@ func RunWithDrawCase() {
 			logger.LogError("恢复余额失败", err)
 			return
 		} else {
-
 			moneyChan <- &amount
 		}
 	}()
 
-	wg.Wait() // 现在这三个是真的并行，最慢的决定时间
+	wg.Wait()
 
-	// 获取用户ID
-	userid := <-userIdChan
+	// 先读取所有channel的数据到变量中
+	var money *float64
+	var allWithdraw *recoversaasbalance.AllWithdraw
+	var userid int
+
+	// 使用select确保非阻塞读取
+	done := 0
+	for done < 3 {
+		select {
+		case m := <-moneyChan:
+			money = m
+			done++
+		case aw := <-allWithdrawChan:
+			allWithdraw = aw
+			done++
+		case uid := <-userIdChan:
+			userid = uid
+			done++
+		}
+	}
 
 	// 添加钱包后台异步执行（不阻塞！）
 	addwallet.RunAddWallet(strconv.Itoa(userid))
@@ -91,18 +107,18 @@ func RunWithDrawCase() {
 	if _, err := SetWithdrawPasswordApi(deskCtx); err != nil {
 		logger.LogError("设置提现密码失败", err)
 		return
-	} else {
-		// 提现逻辑
-		withDrawaChan := make(chan *withDrawaInfo, 1)
-		if !WithDrawCase(deskCtx, <-moneyChan, <-allWithdrawChan, withDrawaChan) {
-			return
-		} else {
-			// 下单
-			withDrawa := <-withDrawaChan
-			withdrawalorders.RunWithdraw(userid, withDrawa.withDrawaType, withDrawa.withDrawaAmont, withDrawa.withDrawaAmont)
-		}
 	}
 
+	// 提现逻辑
+	withDrawaChan := make(chan *withDrawaInfo, 1)
+
+	if !WithDrawCase(deskCtx, money, allWithdraw, withDrawaChan) {
+		return
+	}
+
+	// 下单
+	withDrawa := <-withDrawaChan
+	withdrawalorders.RunWithdraw(userid, withDrawa.withDrawaType, withDrawa.withDrawaAmont, withDrawa.withDrawaAmont)
 }
 
 // 提现
@@ -116,6 +132,8 @@ func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaas
 		}
 		return false
 	}
+	logger.Logger.Info(allwithdraw.UserTodayWithdrawCount)
+	logger.Logger.Info(allwithdraw.AmountCoding)
 	if allwithdraw.UserTodayWithdrawCount == 0 || allwithdraw.AmountCoding != 0 {
 		logger.Logger.Warn("用户的提现次数等于0,或者 用户的打码量不等于0", nil)
 		ch <- &withDrawaInfo{
@@ -124,8 +142,14 @@ func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaas
 		}
 		return false
 	}
+
 	// 要保证提现金额要有大于整个提现list里面的值
 	canWithDrawCaseList := filterGreaterOrEqual(*money, allwithdraw.WithdrawAmountList)
+	TodayWithdrawAmount := allwithdraw.UserTodayWithdrawAmount
+	if TodayWithdrawAmount == -1 {
+		// 如果为-1，则表示没有限制，实际还需去找提现的金额，这个先临时处理一下
+		TodayWithdrawAmount = 9999
+	}
 PT:
 	canWithDrawCaseListLen := len(canWithDrawCaseList)
 	i := 0
@@ -134,8 +158,9 @@ PT:
 	} else {
 		i = utils.RandInt(0, canWithDrawCaseListLen-1)
 	}
+	logger.Logger.Info("随机出来的值", canWithDrawCaseList[i])
 	// 随机出来的值 大于 今日可提现的总金额
-	if canWithDrawCaseList[i] > allwithdraw.UserTodayWithdrawAmount {
+	if canWithDrawCaseList[i] > TodayWithdrawAmount {
 		goto PT
 	}
 	// 筛选出了可以提现的金额

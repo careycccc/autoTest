@@ -29,7 +29,7 @@ func main() {
 	// 	logger.LogError("登录失败", err)
 	// 	return
 	// }
-	//invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
+	// invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
 	// invitationcarousel.RunSpinInvitedWheel() // 当前用户邀请转盘自动邀请下级
 	//invitecode.RunInvite() // 多级下级邀请
 	withdrawcash.RunWithDrawCase() // 提现
