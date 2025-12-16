@@ -1,7 +1,7 @@
 package main
 
 import (
-	withdrawcash "autoTest/API/deskApi/WithdrawCash"
+	dailycheckin "autoTest/API/adminApi/activeManagement/dailyCheckIn"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -31,8 +31,8 @@ func main() {
 	// }
 	// invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
 	// invitationcarousel.RunSpinInvitedWheel() // 当前用户邀请转盘自动邀请下级
-	//invitecode.RunInvite() // 多级下级邀请
-	withdrawcash.RunWithDrawCase() // 提现
+	// invitecode.RunInvite() // 多级下级邀请
+	//withdrawcash.RunWithDrawCase() // 提现
 	// topup.RunRechargeGoods()
 	// GameBetOrders.RunGameBetOrders()              // 后台投注订单的查询
 	// platformreports.RunGetPlatRptStatisticPageList() // 平台报表-> 每日汇总报表
@@ -48,4 +48,6 @@ func main() {
 	// f1.RunF1()
 	//financialmanagement.RunArtificialRechargeFunc() // 人工充值
 	//boomer.RunTasks()
+	// everydayCheckin.RunEverydayCheckIn()    // 每日签到活动
+	dailycheckin.RunDailyCheckInActivity() // 每日签到活动
 }

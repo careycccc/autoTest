@@ -3,13 +3,12 @@ package dailycheckin
 import (
 	rechargeorders "autoTest/API/adminApi/financialManagement/rechargeOrders"
 	memberlist "autoTest/API/adminApi/memberList/memberList"
-	registerapi "autoTest/API/deskApi/registerApi"
-	"autoTest/API/utils"
 	"autoTest/PressureMeasurementModule/accounts"
 	"autoTest/store/config"
 	"autoTest/store/logger"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/panjf2000/ants/v2"
 )
@@ -26,8 +25,8 @@ type SummaryItem struct {
 // 签到通用方法
 
 // ExcelEverDayCheckIn 封装了并发安全处理 []string 切片的逻辑，返回 []UserDailyCheckInInfo。
-func ExcelEverDayCheckIn(input []string) []UserDailyCheckInInfo {
-	poolSize := 5 // 协程池大小
+func ExcelEverDayCheckIn(input []string) []string {
+	poolSize := 10 // 协程池大小
 
 	p, err := ants.NewPool(poolSize)
 	if err != nil {
@@ -36,13 +35,14 @@ func ExcelEverDayCheckIn(input []string) []UserDailyCheckInInfo {
 	}
 	defer p.Release()
 
-	resultChan := make(chan UserDailyCheckInInfo, len(input))
+	resultChan := make(chan string, len(input))
 	var wg sync.WaitGroup
 
 	fmt.Printf("启动 ants 协程池，最大并发 Goroutine 数量: %d\n", poolSize)
 	fmt.Printf("总任务数: %d\n", len(input))
 
 	for i, rawString := range input {
+		time.Sleep(time.Second * 2)
 		wg.Add(1)
 
 		taskFunc := func(data string, index int) func() {
@@ -77,7 +77,7 @@ func ExcelEverDayCheckIn(input []string) []UserDailyCheckInInfo {
 	}()
 
 	// 收集结果
-	var output []UserDailyCheckInInfo
+	var output []string
 	for result := range resultChan {
 		output = append(output, result)
 	}
@@ -115,23 +115,24 @@ func SummarizeOrders(items []rechargeorders.OrderItem) []SummaryItem {
 // 第一次的数据准备  10个vip0的新用户，10个vip1的老用户，10个vip2的老用户
 func PrepareData() {
 	// 随机10个vip0的新用户
-	userList := utils.RandmoUserId(10)
-	for _, v := range userList {
-		// 进行注册
-		resp, _, err := registerapi.NewGeneralAgentRegister(v)
-		if err != nil {
-			logger.Logger.Error("签到活动的数据准备-注册新用户失败", err)
-			return
-		} else {
-			logger.Logger.Info("签到活动的数据准备-注册新用户成功", resp)
-		}
-	}
+	// userList := utils.RandmoUserId(10)
+	// for _, v := range userList {
+	// 	// 进行注册
+	// 	_, _, err := registerapi.NewGeneralAgentRegister(v)
+	// 	if err != nil {
+	// 		logger.Logger.Error("签到活动的数据准备-注册新用户失败", err)
+	// 		return
+	// 	}
+	// }
 
 	// vip的老用户
 	vipList := make([]string, 0, 20)
 	// 随机10个vip1,vip2的老用户
-	for i := 1; i <= 2; i++ {
-		if _, userinfoList, err := memberlist.GetUserVipListApi(AdminCtx, 1, 10, 0, i); err != nil {
+	for i := 1; i <= 4; i++ {
+		if i == 2 || i == 3 {
+			continue
+		}
+		if _, userinfoList, err := memberlist.GetUserVipListApi(AdminCtx, 5, 20, 0, i); err != nil {
 			logger.Logger.Warn("GetUserVipListApi请求失败", err)
 			continue
 		} else {
@@ -155,9 +156,9 @@ func PrepareData() {
 		}
 	}
 	// 所有账号准备完毕
-	userList = append(userList, vipList...)
+	//userList = append(userList, vipList...)
 	//把账号写入到csv中
-	accounts.WriteConcurrently(userList, 5, CSVADDR)
+	accounts.WriteConcurrently(vipList, 5, CSVADDR)
 }
 
 // ====================================================================

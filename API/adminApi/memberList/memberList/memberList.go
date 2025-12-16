@@ -242,9 +242,9 @@ func GetUserVipListApi(ctx *context.Context, pageSize, userNumber int, userType 
 				logger.Logger.Warn("获取用户列表为空")
 				return resp, nil, nil
 			}
-			userList := make([]*UserInfo, userNumber)
-			for i := 0; i < userNumber; i++ {
-				userList[i] = &response.Data.List[i]
+			userList := make([]*UserInfo, 0, len(response.Data.List))
+			for i := 0; i < len(response.Data.List); i++ {
+				userList = append(userList, &response.Data.List[i])
 			}
 			return resp, userList, nil
 		}
@@ -280,9 +280,40 @@ func GetUserAmount(ctx *context.Context, userid int) (*model.Response, string, e
 			if err := json.Unmarshal(respBoy, &res); err != nil {
 				return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetUserAccount[UserAmountResponse]解析失败", err)), "", err
 			} else {
-				//logger.Logger.Info("用户的账号", res.Data)
+				// logger.Logger.Info("用户的账号", res.Data)
 				return resp, res.Data, nil
 			}
+		}
+	}
+}
+
+type UserinfoStruct struct {
+	UserId int `json:"userId"`
+	model.QueryPayloadStruct
+}
+
+// 根据id会员获得用户的详情  用户的类型
+func GetUserDetail(ctx *context.Context, userid int) (*model.Response, *UserInfo, error) {
+	api := "/api/Users/GetPageList"
+	timestamp, random, language := request.GetTimeRandom()
+	payloadStruct := &UserinfoStruct{}
+	payloadList := []interface{}{userid, 1, 20, "Desc", random, language, "", timestamp}
+	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
+		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList请求失败", err)), nil, err
+	} else {
+		// 提取用户id
+		var response GetUserListResponseStruct
+		if err := json.Unmarshal(respBoy, &response); err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList提取用户列表解析失败[GetUserListResponseStruct]", err)), nil, err
+		}
+		if resp, err := model.ParseResponse(respBoy); err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList解析失败", err)), nil, err
+		} else {
+			if len(response.Data.List) == 0 || response.Data.List == nil {
+				logger.Logger.Warn("获取用户列表为空")
+				return resp, nil, nil
+			}
+			return resp, &response.Data.List[0], nil
 		}
 	}
 }

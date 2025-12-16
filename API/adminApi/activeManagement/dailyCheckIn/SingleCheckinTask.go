@@ -3,12 +3,13 @@ package dailycheckin
 import (
 	financialmanagement "autoTest/API/adminApi/financialManagement"
 	memberactivityblacklist "autoTest/API/adminApi/memberList/MemberActivityBlacklist"
+	"autoTest/API/deskApi/active/everydayCheckin"
 	getuserinfo "autoTest/API/deskApi/getUserinfo"
 	login "autoTest/API/deskApi/loginApi"
 	"autoTest/store/config"
 	"autoTest/store/logger"
 	"autoTest/store/model"
-	sutils "autoTest/store/utils"
+	util "autoTest/store/utils"
 	"math/rand"
 	"strconv"
 	"sync"
@@ -20,108 +21,80 @@ import (
 返回会员今日的签到信息
 *
 */
-func SingleCheckinTask(userAccount string) (UserDailyCheckInInfo, error) {
-	// 0.登录前获取到上一天的该用户的状态
-	yesterdayUserinfo := RecoverYesterdayDataByAccount(userAccount)
+func SingleCheckinTask(userAccount string) (string, error) {
 	// 1.用户进行前台登录
 	if ctx, err := login.ReturnContextLoginY1(userAccount, config.SUB_PWD); err != nil {
 		logger.Logger.Warn(userAccount, "前台登录失败", err)
-		info := NewUserDailyCheckInInfoBuilder().WithUserAccount(userAccount).WithAlarmInformation("前台登录失败").WithCheckinNumberDay(0).Build()
-		return info, err
+		return "", err
 	} else {
-		// 2.获取用户的vip等级和金额，进行会员等级的判断，该活动会员是否可见
+		// 2.获取会员信息
 		if _, userinfo, err := getuserinfo.GetUserInfo(ctx); err != nil {
-			logger.Logger.Warn(userAccount, "获取用户信息失败", err)
-			info := NewUserDailyCheckInInfoBuilder().WithUserAccount(userAccount).WithAlarmInformation("获取用户信息失败").WithCheckinNumberDay(0).Build()
-			return info, err
+			logger.Logger.Warn(userAccount, "获取会员信息失败", err)
+			return "", err
 		} else {
-			userLevel := userinfo.VipLevel
-			userId := userinfo.UserID
-			addBlack := yesterdayUserinfo.IsBlacklist // 这个起始值是昨天的该会员的黑名单的状态
-			// 主动将该会员加入黑名单中
-			if addBlack {
-				// 解除黑名单 有40的概率解除黑名单
-				result := RemoveUserFromBlackList(userId)
-				if result {
-					// 解除黑名单成功
-					addBlack = !result
-				}
+			// 查询这个会员在不在黑名单中
+			if _, isBlackList, err := memberactivityblacklist.UserActivityBlockIsInBlockApi(ctx, strconv.Itoa(userinfo.UserID), 21); err != nil {
+				logger.Logger.Warn(userAccount, "查询会员是否在黑名单中失败", err)
+				return "", err
 			} else {
-				// 加入黑名单 有20的概率加入黑名单
-				result := AddUserToBlackList(userId)
-				if result {
-					// 加入黑名单成功
-					addBlack = result
-				}
-			}
-			//判断，该活动会员是否可见
-			if userLevel < ShowObject[0] {
-				info := NewUserDailyCheckInInfoBuilder().WithUserAccount(userAccount).WithVipLevel(userLevel).WithUserId(userId).WithAlarmInformation("会员vip等级不满足参与本次签到活动").WithCheckinNumberDay(0).Build()
-				return info, nil
-			} else {
-				// 3.是否进入详情页 80%的概率进入活动详情页
-				pageInfo := RandomIntAndCompare(100, 80)
-				if pageInfo {
-					// 进入详情页 发起详情页的请求
+				if isBlackList {
+					// 在黑名单中,40%的几率解除黑名单
+					if RandomIntAndCompare(100, 40) {
+						RemoveUserFromBlackList(userinfo.UserID)
+					}
 				} else {
-					// 不进入详情页
-					pageInfo = false
+					// 不在黑名单中,30%的几率加入黑名单
+					if RandomIntAndCompare(100, 20) {
+						AddUserToBlackList(userinfo.UserID)
+					}
 				}
-				// 4.充值金额是否满足解锁活动的条件
-				if money, err := sutils.GenerateRandomInt(config.MIN_MONENY, config.MAX_MONENY); err != nil {
-					logger.Logger.Warn(userAccount, "生成充值金额失败", err)
-					info := NewUserDailyCheckInInfoBuilder().WithUserAccount(userAccount).WithAlarmInformation("生成充值金额失败").WithIsDetailsPage(pageInfo).WithVipLevel(userLevel).WithUserId(userId).WithCheckinNumberDay(0).Build()
-					return info, err
+				// 等待5秒，进行充值操作
+				time.Sleep(5 * time.Second)
+				moneny, _ := util.GenerateRandomInt(80, 200)
+				if resp, err := financialmanagement.ArtificialRechargeFunc(AdminCtx, userinfo.UserID, moneny, 1); err != nil {
+					logger.Logger.Warn(userAccount, "会员充值失败", err)
+					return resp.Msg, err
 				} else {
-					// 4.充值金额是否满足解锁活动的条件
-					if resp, err := financialmanagement.ArtificialRechargeFunc(AdminCtx, userId, float64(money), 0); err != nil {
-						logger.Logger.Warn(userAccount, "后台充值请求失败", err)
-						info := NewUserDailyCheckInInfoBuilder().WithUserAccount(userAccount).WithAlarmInformation("后台充值请求失败").WithIsDetailsPage(pageInfo).WithVipLevel(userLevel).WithUserId(userId).WithCheckinNumberDay(0).Build()
-						return info, err
+					isSuccess := model.IsSuccess(resp)
+					if !isSuccess {
+						logger.Logger.Warn(userAccount, "isSuccess会员充值失败", err)
+						return "", err
 					} else {
-						isSuccess := model.IsSuccess(resp)
-						if !isSuccess {
-							// 充值失败
-							logger.Logger.Warn(userAccount, "充值失败", err)
-							info := NewUserDailyCheckInInfoBuilder().WithUserAccount(userAccount).WithIsDetailsPage(pageInfo).WithAlarmInformation("充值失败").WithVipLevel(userLevel).WithUserId(userId).WithCheckinNumberDay(0).Build()
-							return info, err
-						} else {
-							// 充值成功
-							if money < AcitveRechargeAmount {
-								logger.Logger.Warn(userAccount, "充值金额小于参与活动的金额", err)
-								info := NewUserDailyCheckInInfoBuilder().WithUserAccount(userAccount).WithIsDetailsPage(pageInfo).WithVipLevel(userLevel).WithUserId(userId).WithRechargeAmount(money).WithAlarmInformation("充值金额小于参与活动的金额").WithCheckinNumberDay(0).Build()
-								return info, err
-							} else {
-								// 4.充值金额满足解锁活动的条件
-								// 5.判断当前用户是否在黑名单中
-								if addBlack {
-									// 在黑名单中,
-									info := NewUserDailyCheckInInfoBuilder().WithUserAccount(userAccount).WithIsDetailsPage(pageInfo).WithVipLevel(userLevel).WithUserId(userId).WithRechargeAmount(money).WithIsBlacklist(addBlack).WithCheckinNumberDay(yesterdayUserinfo.CheckinNumberDay + 1).Build()
-									return info, nil
-								} else {
-									// 不在黑名单 50%发送签到请求
-									sendChickein := RandomIntAndCompare(100, 50)
-									if sendChickein {
-										// 发起签到请求   *******  需要获取连续签到的天数和奖励
-										info := NewUserDailyCheckInInfoBuilder().WithUserAccount(userAccount).WithIsDetailsPage(pageInfo).WithVipLevel(userLevel).WithUserId(userId).WithRechargeAmount(money).WithIsBlacklist(addBlack).WithIsAutoReceiveAward(sendChickein).WithCheckinNumberDay(yesterdayUserinfo.CheckinNumberDay + 1).WithCheckinAward(AcitveRechargeAmount).Build()
-										return info, nil
-									} else {
-										AutoCheckInNumber = append(AutoCheckInNumber, userId)
-										// 不发起 签到请求,自动领取
-										info := NewUserDailyCheckInInfoBuilder().WithUserAccount(userAccount).WithIsDetailsPage(pageInfo).WithVipLevel(userLevel).WithUserId(userId).WithRechargeAmount(money).WithIsBlacklist(addBlack).WithIsAutoReceiveAward(sendChickein).WithCheckinNumberDay(yesterdayUserinfo.CheckinNumberDay + 1).Build()
-										return info, nil
-									}
-								}
-
+						// 等待5秒进行签到操作
+						time.Sleep(5 * time.Second)
+						// 50%的几率签到
+						if RandomIntAndCompare(100, 50) {
+							// 1.获取用户签到信息
+							resp, respData, err := everydayCheckin.GetUserCheckInActivityData(ctx)
+							if err != nil {
+								return resp.Msg, err
 							}
+							if resp.Msg == "" {
+								return "该会员不满足本轮活动的签到条件", nil
+							}
+							//logger.Logger.Info("每日签到信息", res, respData)
+							id := respData.Data.ActivityId
+							if id == 0 {
+								logger.Logger.Warn("没有获取到用户签到信息")
+								return "", err
+							}
+							// 2.点击签到按钮
+							resp, err = everydayCheckin.ReceiveDailyCheckInRewardApi(ctx, id, 0)
+							if err != nil {
+								return resp.Msg, err
+							}
+							if resp.Msg != "Succeed" {
+								logger.Logger.Warn("每日签到失败", resp.Msg)
+								return resp.Msg, err
+							}
+							logger.Logger.Info("每日签到信息", resp.Msg)
 						}
+						return "", nil
 					}
 				}
 			}
 		}
 	}
-	// 6.点击签到 手动签到，不点击就是自动签到，明天会自动派发
-	// 7.查看余额是否增加 账变的金额
 }
 
 // 主动将该会员加入黑名单中 有20的概率加入黑名单
@@ -129,7 +102,7 @@ func AddUserToBlackList(userId int) bool {
 	result := RandomIntAndCompare(100, 20)
 	if result {
 		// 加入黑名单
-		if resp, err := memberactivityblacklist.UserActivityBlockAddApi(AdminCtx, strconv.Itoa(userId), 1); err != nil {
+		if resp, err := memberactivityblacklist.UserActivityBlockAddApi(AdminCtx, strconv.Itoa(userId), 21); err != nil {
 			logger.Logger.Warn(userId, "加入黑名单失败", err)
 			return false
 		} else {
@@ -150,7 +123,7 @@ func RemoveUserFromBlackList(userId int) bool {
 	result := RandomIntAndCompare(100, 40)
 	if result {
 		// 解除黑名单
-		if resp, err := memberactivityblacklist.UserActivityBlockDeleteApi(AdminCtx, userId, 1); err != nil {
+		if resp, err := memberactivityblacklist.UserActivityBlockDeleteApi(AdminCtx, userId, 21); err != nil {
 			logger.Logger.Warn(userId, "解除黑名单失败", err)
 			return false
 		} else {

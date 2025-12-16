@@ -10,6 +10,7 @@ import (
 	"autoTest/store/request"
 	"context"
 	"encoding/json"
+	"fmt"
 )
 
 // 资金账变查询
@@ -106,6 +107,42 @@ func FundtransactionrecordsApi(ctx *context.Context, financialTypeList []string,
 	}
 }
 
+type QueryIdRequest struct {
+	// 财务类型列表
+	FinancialTypeList []string `json:"financialTypeList"`
+	// 查询开始时间（毫秒时间戳）
+	StartTime int64 `json:"startTime"`
+	// 查询结束时间（毫秒时间戳）
+	EndTime          int64 `json:"endTime"`
+	UserId           int   `json:"userId"`
+	SearchUserIdType int   `json:"searchUserIdType"`
+	model.QueryPayloadStruct
+}
+
+// 根据id号查询账变类型
+func GetFinancialTypeById(ctx *context.Context, userId int, financialTypeList []string, startTime, endTime int64) (*model.Response, *QueryResponse, error) {
+	api := "/api/Financial/GetPageList"
+	payloadStruct := &QueryIdRequest{}
+	timestamp, random, language := request.GetTimeRandom()
+	// 暂时处理获取2000条数据
+	payloadList := []interface{}{financialTypeList, startTime, endTime, userId, 1, 1, 20, "Desc", random, language, "", timestamp}
+	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
+		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Financial/GetPageList请求失败", err)), &QueryResponse{}, err
+	} else {
+		var resp QueryResponse
+		if err := json.Unmarshal(respBoy, &resp); err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Financial/GetPageList【QueryResponse】反序列化失败", err)), &QueryResponse{}, err
+		} else {
+			// 将响应结果进行反序列化
+			if res, err := model.ParseResponse(respBoy); err != nil {
+				return model.HandlerErrorRes(model.ErrorLoggerType("/api/Financial/GetPageList反序列化失败", err)), &QueryResponse{}, err
+			} else {
+				return res, &resp, nil
+			}
+		}
+	}
+}
+
 // financialTypeList 传入类型 是一个[]string
 func RunFundtransactionrecordsApi(financialTypeList []string) *FundTransactionInfoList {
 	// 后台登录
@@ -119,6 +156,25 @@ func RunFundtransactionrecordsApi(financialTypeList []string) *FundTransactionIn
 			return &FundTransactionInfoList{}
 		} else {
 			return p
+		}
+	}
+}
+
+func RunGetFinancialTypeById() {
+	userid := 131770
+	financialTypeList := []string{"DailyCheckInReward"}
+	// 后台登录
+	if ctx, err := login.RunAdminSitLogin(); err != nil {
+		logger.LogError("资金账变的查询后台登录失败", err)
+		return
+	} else {
+		_, startTime, _, endTime, _ := utils.ParseTimeRangeToTimestamp(config.StartTime, config.EndTime)
+		if _, p, err := GetFinancialTypeById(ctx, userid, financialTypeList, startTime, endTime); err != nil {
+			logger.Logger.Warn("提现赔付账变的错误信息", err)
+			return
+		} else {
+			fmt.Println("---", p.Data.List)
+			return
 		}
 	}
 }

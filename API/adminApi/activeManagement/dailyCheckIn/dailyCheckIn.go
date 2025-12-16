@@ -1,15 +1,20 @@
 package dailycheckin
 
 import (
+	"autoTest/API/adminApi/common"
 	rechargeorders "autoTest/API/adminApi/financialManagement/rechargeOrders"
 	"autoTest/API/adminApi/login"
+	fundtransactionrecords "autoTest/API/adminApi/reportManagement/FundTransactionRecords"
 	memberreports "autoTest/API/adminApi/reportManagement/memberReports"
+	"autoTest/API/deskApi/active/everydayCheckin"
+	desklogin "autoTest/API/deskApi/loginApi"
 	"autoTest/API/utils"
 	"autoTest/PressureMeasurementModule/accounts"
 	"autoTest/store/config"
 	"autoTest/store/logger"
 	"context"
 	"fmt"
+	"time"
 )
 
 // 每日签到活动
@@ -45,6 +50,8 @@ var (
 	LoginNumber int
 	// 后台登录的ctx
 	AdminCtx *context.Context
+	// 当日充值金额和人数
+	CompleteRechargeTaskList []SummaryItem
 	// 每日用户的签到信息列表
 	UserDailyCheckInInfoList []UserDailyCheckInInfo
 	// 昨日用户的签到信息列表
@@ -62,7 +69,7 @@ var (
 	// 活动充值金额
 	AcitveRechargeAmount float64
 	// 当日触达人数
-	TouchNumber []int
+	TouchNumber int = 5
 	// 完成充值任务的人数
 	ActiveRechargeNumber []int
 	// 派发总奖励的金额
@@ -71,16 +78,11 @@ var (
 	ManualReceiveNumber []int
 	//  手动领取的金额
 	ManualReceiveAmount float64
+	// 自动领取人数
+	AutoReceiveNumber []int
+	// 自动领取的金额
+	AutoReceiveAmount float64
 )
-
-// 获取当期活动配置
-func GetActiveInfo() {
-	ActiveName = "每日签到"
-	ActiveType = "每日签到"
-	ShowObject = []int{1, 2, 3}
-	AcitveRechargeAmount = 100
-
-}
 
 func init() {
 	// 后台登录
@@ -109,72 +111,118 @@ func GetDailyCheckInInfo() {
 	} else {
 		list := rechargeOrderResponse.Data.List
 		summarList := SummarizeOrders(list)
+		CompleteRechargeTaskList = summarList
 		// 去重充值会员ID  经过合并就已经去重了
 		RechargeNumber = len(summarList) // 充值人数(有充值行为的人)
-		CompleteRechargeTaskList := make([]SummaryItem, 0, len(summarList))
-		// 获取每日完成充值任务的人数
-		for _, item := range summarList {
-			if item.TotalActualAmount >= 1000 {
-				CompleteRechargeTaskList = append(CompleteRechargeTaskList, item)
+	}
+}
+
+// 查询昨天的数据，主要是数据报表
+func RunCheckinDataValidation() {
+	activeId := 27 // 活动id
+	activeName := ""
+	//1，获取每日登录人数
+	//2，获取每日充值人数，充值金额
+	GetDailyCheckInInfo()
+	for _, item := range CompleteRechargeTaskList {
+		// 3 查询这个会员是否参与了本轮活动
+		// 3.1 id转账号进行前台登录
+		amount := common.IdToAmountAndUpdatePassword(AdminCtx, item.UserId)
+		if amount == "" {
+			logger.Logger.Warn("会员账号转换失败/或者是游客账号", item.UserId)
+			continue
+		}
+		// 3.2 登录
+		ctx, err := desklogin.ReturnContextLoginY1(amount, "qwer1234")
+		if err != nil {
+			return
+		}
+		// 1.获取用户签到信息
+		res, respData, err := everydayCheckin.GetUserCheckInActivityData(ctx)
+		if err != nil {
+			return
+		}
+		if res.Msg != "Succeed" {
+			// 表示这个账号没有参与过本轮活动，直接跳过
+			// 记录这个账号的下标
+			fmt.Println("没有参与过活动", item.UserId)
+			continue
+		}
+		//4，获取这个会员的当前签到天数，如果这个天数=1，表示今天第一条参与，不做统计，只有是连续签到才做统计，
+		if respData.Data.ActivityId == activeId {
+			activeName = respData.Data.ActivityName
+			// 只统计活动id为27好的
+			if respData.Data.CurrentCheckInDays > 1 {
+				// 获取这个会员当期的配置选项
+				reward := respData.Data.RewardDetail[respData.Data.CurrentCheckInDays-2]
+				// 查找这个会员的昨天的充值和任务充值金额是否满足
+				if item.TotalActualAmount >= float64(reward.RechargeAmount) {
+					// 满足，派发总金额的累加
+					AwardAmount += float64(reward.RewardAmount)
+					// 完成人数累加
+					ActiveRechargeNumber = append(ActiveRechargeNumber, item.UserId)
+				}
 			}
 		}
-		CompleteRechargeTaskNumber = len(CompleteRechargeTaskList) // 完成充值任务的人数
+
 	}
+	//5，满足了要统计一下，总共发放的金额
+	//6，查询昨天的该会员的账变记录，如果有数据，说明是昨天手动领取的，剩余的就是自动发的金额
+	financialTypeList := []string{"DailyCheckInReward"}
+	for _, item := range ActiveRechargeNumber {
+		fmt.Println("完成充值任务的人数的id", item)
+		// 查找手动派发的人数
+		_, start, _, end, _ := utils.ParseTimeRangeToTimestamp(config.StartTime, config.EndTime)
+		if _, fundtrans, err := fundtransactionrecords.GetFinancialTypeById(AdminCtx, item, financialTypeList, start, end); err != nil {
+			logger.Logger.Error("查询账变记录失败", err)
+			continue
+		} else {
+
+			if len(fundtrans.Data.List) == 0 {
+				// 表示没有查询到昨日的数据，没有手动领取 // 自动领取的人数
+				AutoReceiveNumber = append(AutoReceiveNumber, item)
+			} else {
+				ManualReceiveNumber = append(ManualReceiveNumber, item)
+				ManualReceiveAmount += float64(fundtrans.Data.List[0].Amount)
+			}
+		}
+	}
+	yesterdayFishPerson := len(ActiveRechargeNumber)
+	yesterdayManualReceiveNumber := len(ManualReceiveNumber)
+	yesterdayAutoReceiveNumber := len(AutoReceiveNumber)
+	AutoReceiveAmount = AwardAmount - ManualReceiveAmount
+	fmt.Printf("昨日登录人数:%d,昨日参与的人数：%d\n", LoginNumber, RechargeNumber)
+	fmt.Printf("活动id:%d,活动名称:%s,昨日派发总金额:%.2f,昨日完成任务人数:%d\n", activeId, activeName, AwardAmount, yesterdayFishPerson)
+	fmt.Printf("手动领取人数:%d,手动领取金额:%.2f\n", yesterdayManualReceiveNumber, ManualReceiveAmount)
+	fmt.Printf("自动领取人数:%d,自动领取金额:%.2f\n", yesterdayAutoReceiveNumber, AutoReceiveAmount)
+	fmt.Printf("触达人数:%d,触达率：%.2f%%,参与率：%.2f%%\n", TouchNumber, float64(TouchNumber/LoginNumber*100), float64(RechargeNumber/TouchNumber*100))
+	fmt.Printf("完成率：%.2f%%,手动领取率：%.2f%%,自动领取率：%.2f%%\n", float64(yesterdayFishPerson/RechargeNumber*100),
+		float64(yesterdayManualReceiveNumber/yesterdayFishPerson*100), float64(yesterdayAutoReceiveNumber/yesterdayFishPerson*100))
+	fmt.Printf("手动领取成本率:%.2f%%,自动领取成本率：%.2f%%\n", float64(ManualReceiveAmount/AwardAmount*100), float64(AutoReceiveAmount/AwardAmount*100))
 }
 
 // 每日的执行，从csv中读取数据，进行登录，进行充值，进行签到，或者加入黑名单
-func PrepareDataByCsv() {
+func PrepareDataByCsv() []string {
 	// 从csv中读取数据
 	if amountlist, err := accounts.ProcessCSVConcurrently(CSVADDR, 4); err != nil {
 		logger.Logger.Error("从csv中读取数据失败", err)
-		return
+		return nil
 	} else {
-		UserDailyCheckInInfoList = make([]UserDailyCheckInInfo, 0, len(amountlist))
-		LastDayUserDailyCheckInInfoList = make([]UserDailyCheckInInfo, 0, len(amountlist))
-		// 需要上一天的数据恢复
-		LastDayUserDailyCheckInInfoList = RecoverYesterdayData()
-		// 进行登录，进行充值，进行签到，或者加入黑名单
-		UserDailyCheckInInfoList = ExcelEverDayCheckIn(amountlist)
-		ReportStatistics(UserDailyCheckInInfoList)
-		// 保存今日所有参与的数据
-		SaveToDayData(UserDailyCheckInInfoList)
+		return amountlist
 	}
 }
 
+// 准备数据和签到活动
 func RunDailyCheckInActivity() {
-	//PrepareData() // 只能运行一次，把初始化的用户账号写入到csv中
-	// fmt.Println("每日签到活动开始运行...", CompleteRechargeTaskNumber)
-	PrepareDataByCsv()
-}
-
-// 报表统计
-func ReportStatistics(userinfo []UserDailyCheckInInfo) {
-	if len(userinfo) == 0 {
-		logger.Logger.Warn("每日用户的签到信息列表数据为空")
-		return
+	// 数据准备
+	PrepareData()
+	time.Sleep(time.Second * 5)
+	//从csv里面读取数据出来
+	list := PrepareDataByCsv()
+	//SingleCheckinTask("911030331131")
+	// ExcelEverDayCheckIn(list)
+	for _, item := range list {
+		time.Sleep(time.Second * 5)
+		SingleCheckinTask(item)
 	}
-	for _, info := range userinfo {
-		if info.IsDetailsPage {
-			TouchNumber = append(TouchNumber, info.UserId) // 触达人数统计
-		}
-		if info.RechargeAmount >= AcitveRechargeAmount {
-			ActiveRechargeNumber = append(ActiveRechargeNumber, info.UserId) // 完成充值任务人数统计
-		}
-		// 统计今日总的金额
-		AwardAmount += info.RechargeAmount
-		// 手动领取人数统计
-		if info.IsAutoReceiveAward {
-			ManualReceiveNumber = append(ManualReceiveNumber, info.UserId)
-			// 手动领取的金额
-			ManualReceiveAmount += info.RechargeAmount
-		}
-	}
-	touchNumber := len(TouchNumber)
-	fmt.Printf("当日触达人数:%d,触达率:%.2f\n", touchNumber, float64(touchNumber/LoginNumber)*100)
-	fmt.Printf("当日参与人数:%d,参与率:%.2f\n", RechargeNumber, float64(RechargeNumber/touchNumber)*100)
-	activeRechargeNumber := len(ActiveRechargeNumber)
-	fmt.Printf("当日完成人数：%d,完成率:%.2f\n", activeRechargeNumber, float64(activeRechargeNumber/RechargeNumber)*100)
-	fmt.Printf("当日派发奖励金额:%f\n", AwardAmount)
-	manualReceiveNumber := len(ManualReceiveNumber)
-	fmt.Printf("当日手动领取人数:%d,手动领取率:%.2f,手动领取金额:%.2f,手动领取成本率:%.2f\n", manualReceiveNumber, float64(manualReceiveNumber/activeRechargeNumber)*100, ManualReceiveAmount, float64(ManualReceiveAmount/AwardAmount)*100)
 }

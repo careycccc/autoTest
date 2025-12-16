@@ -6,6 +6,7 @@ import (
 	"autoTest/store/model"
 	"autoTest/store/request"
 	"context"
+	"encoding/json"
 )
 
 // 会员列表的黑名单
@@ -66,6 +67,54 @@ func UserActivityBlockDeleteApi(ctx *context.Context, userid int, activityBlockT
 			return model.HandlerErrorRes(model.ErrorLoggerType("/api/UserActivityBlock/Delete 响应解析失败", err)), err
 		} else {
 			return resp, nil
+		}
+	}
+}
+
+// 查询会员是否在某类型的黑名单中
+type UserActivityBlockIsInBlock struct {
+	UserId            string `json:"userId"`            // 会员ID
+	ActivityBlockType int    `json:"activityBlockType"` // 黑名单类型
+	model.QueryPayloadStruct
+}
+
+type UserActivityBlockIsInBlockResList struct {
+	ActivityBlockType int    `json:"activityBlockType"`
+	CreateTime        int64  `json:"createTime"`
+	Creator           string `json:"creator"`
+	Remark            string `json:"remark"`
+	UserId            int    `json:"userId"`
+}
+
+type UserActivityBlockIsInBlockRes struct {
+	Data struct {
+		List []UserActivityBlockIsInBlockResList `json:"list"`
+	} `json:"data"`
+}
+
+// 查询会员是否在某类型的黑名单中
+func UserActivityBlockIsInBlockApi(ctx *context.Context, userid string, activityBlockType int) (*model.Response, bool, error) {
+	api := "/api/UserActivityBlock/GetPageList"
+	payloadStruct := &UserActivityBlockIsInBlock{}
+	timestamp, random, language := request.GetTimeRandom()
+	payloadList := []interface{}{userid, activityBlockType, 1, 20, "Desc", random, language, "", timestamp}
+	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
+		return model.HandlerErrorRes(model.ErrorLoggerType("/api/UserActivityBlock/GetPageList 请求失败", err)), false, err
+	} else {
+		if string(respBoy) == "" {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/UserActivityBlock/GetPageList respBoy 为空", err)), false, err
+		}
+		if resp, err := model.ParseResponse(respBoy); err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/UserActivityBlock/GetPageList 响应解析失败", err)), false, err
+		} else {
+			var res UserActivityBlockIsInBlockRes
+			if err := json.Unmarshal(respBoy, &res); err != nil {
+				return model.HandlerErrorRes(model.ErrorLoggerType("/api/UserActivityBlock/GetPageList[UserActivityBlockIsInBlockRes] 响应解析失败", err)), false, err
+			}
+			if len(res.Data.List) == 0 {
+				return resp, false, nil
+			}
+			return resp, true, nil
 		}
 	}
 }
