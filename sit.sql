@@ -1,0 +1,2 @@
+#充值订单的查询,查询条件为:租户ID为3004,订单状态为已支付,订单创建时间在指定的时间范围内，查询结果为用户ID去重后的数据
+select DISTINCT UserId from tab_recharge_order where TenantId = 3004 and LastUpdateTime BETWEEN 1765823400000 AND 1765909799000 and RechargeState="Payed";

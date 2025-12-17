@@ -49,5 +49,6 @@ func main() {
 	//financialmanagement.RunArtificialRechargeFunc() // 人工充值
 	//boomer.RunTasks()
 	// everydayCheckin.RunEverydayCheckIn()    // 每日签到活动
-	dailycheckin.RunDailyCheckInActivity() // 每日签到活动
+	dailycheckin.RunCheckinDataValidation() // 每日签到活动报表查看
+	// dailycheckin.RunDailyCheckInActivity() // 每日签到活动
 }

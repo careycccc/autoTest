@@ -69,7 +69,7 @@ var (
 	// 活动充值金额
 	AcitveRechargeAmount float64
 	// 当日触达人数
-	TouchNumber int = 5
+	TouchNumber int = 39
 	// 完成充值任务的人数
 	ActiveRechargeNumber []int
 	// 派发总奖励的金额
@@ -110,6 +110,7 @@ func GetDailyCheckInInfo() {
 		return
 	} else {
 		list := rechargeOrderResponse.Data.List
+		fmt.Println("昨日有充值行为的人的去重前的数据：", len(list))
 		summarList := SummarizeOrders(list)
 		CompleteRechargeTaskList = summarList
 		// 去重充值会员ID  经过合并就已经去重了
@@ -170,7 +171,7 @@ func RunCheckinDataValidation() {
 	//6，查询昨天的该会员的账变记录，如果有数据，说明是昨天手动领取的，剩余的就是自动发的金额
 	financialTypeList := []string{"DailyCheckInReward"}
 	for _, item := range ActiveRechargeNumber {
-		fmt.Println("完成充值任务的人数的id", item)
+		//fmt.Println("完成充值任务的人数的id", item)
 		// 查找手动派发的人数
 		_, start, _, end, _ := utils.ParseTimeRangeToTimestamp(config.StartTime, config.EndTime)
 		if _, fundtrans, err := fundtransactionrecords.GetFinancialTypeById(AdminCtx, item, financialTypeList, start, end); err != nil {
@@ -195,10 +196,17 @@ func RunCheckinDataValidation() {
 	fmt.Printf("活动id:%d,活动名称:%s,昨日派发总金额:%.2f,昨日完成任务人数:%d\n", activeId, activeName, AwardAmount, yesterdayFishPerson)
 	fmt.Printf("手动领取人数:%d,手动领取金额:%.2f\n", yesterdayManualReceiveNumber, ManualReceiveAmount)
 	fmt.Printf("自动领取人数:%d,自动领取金额:%.2f\n", yesterdayAutoReceiveNumber, AutoReceiveAmount)
-	fmt.Printf("触达人数:%d,触达率：%.2f%%,参与率：%.2f%%\n", TouchNumber, float64(TouchNumber/LoginNumber*100), float64(RechargeNumber/TouchNumber*100))
-	fmt.Printf("完成率：%.2f%%,手动领取率：%.2f%%,自动领取率：%.2f%%\n", float64(yesterdayFishPerson/RechargeNumber*100),
-		float64(yesterdayManualReceiveNumber/yesterdayFishPerson*100), float64(yesterdayAutoReceiveNumber/yesterdayFishPerson*100))
-	fmt.Printf("手动领取成本率:%.2f%%,自动领取成本率：%.2f%%\n", float64(ManualReceiveAmount/AwardAmount*100), float64(AutoReceiveAmount/AwardAmount*100))
+	fmt.Printf("触达人数:%d,触达率：%.2f%%,参与率：%.2f%%\n", TouchNumber,
+		float64(TouchNumber)/float64(LoginNumber)*100,
+		float64(RechargeNumber)/float64(TouchNumber)*100)
+	fmt.Printf("完成率：%.2f%%,手动领取率：%.2f%%,自动领取率：%.2f%%\n",
+		float64(yesterdayFishPerson)/float64(RechargeNumber)*100,
+		float64(yesterdayManualReceiveNumber)/float64(yesterdayFishPerson)*100,
+		float64(yesterdayAutoReceiveNumber)/float64(yesterdayFishPerson)*100)
+	fmt.Printf("手动领取成本率:%.2f%%,自动领取成本率：%.2f%%\n",
+		float64(ManualReceiveAmount)/float64(AwardAmount)*100,
+		float64(AutoReceiveAmount)/float64(AwardAmount)*100)
+
 }
 
 // 每日的执行，从csv中读取数据，进行登录，进行充值，进行签到，或者加入黑名单

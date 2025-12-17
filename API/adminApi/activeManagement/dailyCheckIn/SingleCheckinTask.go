@@ -63,7 +63,7 @@ func SingleCheckinTask(userAccount string) (string, error) {
 						// 等待5秒进行签到操作
 						time.Sleep(5 * time.Second)
 						// 50%的几率签到
-						if RandomIntAndCompare(100, 50) {
+						if RandomIntAndCompare(100, 80) {
 							// 1.获取用户签到信息
 							resp, respData, err := everydayCheckin.GetUserCheckInActivityData(ctx)
 							if err != nil {

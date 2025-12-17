@@ -3,7 +3,7 @@ package rechargewheel
 import (
 	financialmanagement "autoTest/API/adminApi/financialManagement"
 	"autoTest/API/adminApi/login"
-	getgiftinfo "autoTest/API/deskApi/activeGIft/GetGiftInfo"
+	getGiftInfo "autoTest/API/deskApi/activeGift/GetGiftInfo"
 	getuserinfo "autoTest/API/deskApi/getUserinfo"
 	registerapi "autoTest/API/deskApi/registerApi"
 	"autoTest/API/utils"
@@ -26,7 +26,7 @@ type UserRechargeWheelInfo struct {
 
 // 获取当前用户充值转盘的，开启信息，剩余旋转次数
 func GetUserRechargeWheelInfo(ctx *context.Context) (UserRechargeWheelInfo, error) {
-	if _, rechargeWheelInfo, err := getgiftinfo.GetGiftInfoApi(ctx); err != nil {
+	if _, rechargeWheelInfo, err := getGiftInfo.GetGiftInfoApi(ctx); err != nil {
 		return UserRechargeWheelInfo{}, err
 	} else {
 		info := UserRechargeWheelInfo{

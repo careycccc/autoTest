@@ -126,12 +126,9 @@ func PrepareData() {
 	// }
 
 	// vip的老用户
-	vipList := make([]string, 0, 20)
+	vipList := make([]string, 0, 100)
 	// 随机10个vip1,vip2的老用户
-	for i := 1; i <= 4; i++ {
-		if i == 2 || i == 3 {
-			continue
-		}
+	for i := 5; i <= 6; i++ {
 		if _, userinfoList, err := memberlist.GetUserVipListApi(AdminCtx, 5, 20, 0, i); err != nil {
 			logger.Logger.Warn("GetUserVipListApi请求失败", err)
 			continue
