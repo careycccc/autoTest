@@ -25,7 +25,7 @@ func SingleCheckinTask(userAccount string) (string, error) {
 	// 1.用户进行前台登录
 	if ctx, err := login.ReturnContextLoginY1(userAccount, config.SUB_PWD); err != nil {
 		logger.Logger.Warn(userAccount, "前台登录失败", err)
-		return "", err
+		return "5479", err
 	} else {
 		// 2.获取会员信息
 		if _, userinfo, err := getuserinfo.GetUserInfo(ctx); err != nil {
@@ -33,66 +33,64 @@ func SingleCheckinTask(userAccount string) (string, error) {
 			return "", err
 		} else {
 			// 查询这个会员在不在黑名单中
-			if _, isBlackList, err := memberactivityblacklist.UserActivityBlockIsInBlockApi(ctx, strconv.Itoa(userinfo.UserID), 21); err != nil {
-				logger.Logger.Warn(userAccount, "查询会员是否在黑名单中失败", err)
-				return "", err
-			} else {
-				if isBlackList {
-					// 在黑名单中,40%的几率解除黑名单
-					if RandomIntAndCompare(100, 40) {
-						RemoveUserFromBlackList(userinfo.UserID)
-					}
-				} else {
-					// 不在黑名单中,30%的几率加入黑名单
-					if RandomIntAndCompare(100, 20) {
-						AddUserToBlackList(userinfo.UserID)
-					}
+			_,isBlackList, _ := memberactivityblacklist.UserActivityBlockIsInBlockApi(ctx, strconv.Itoa(userinfo.UserID), 21)
+			// 3.判断会员是否在黑名单中
+			if isBlackList {
+				// 在黑名单中,50%的几率解除黑名单
+				if RandomIntAndCompare(100, 40) {
+					RemoveUserFromBlackList(userinfo.UserID)
 				}
-				// 等待5秒，进行充值操作
-				time.Sleep(5 * time.Second)
-				moneny, _ := util.GenerateRandomInt(80, 200)
-				if resp, err := financialmanagement.ArtificialRechargeFunc(AdminCtx, userinfo.UserID, moneny, 1); err != nil {
-					logger.Logger.Warn(userAccount, "会员充值失败", err)
-					return resp.Msg, err
-				} else {
-					isSuccess := model.IsSuccess(resp)
-					if !isSuccess {
-						logger.Logger.Warn(userAccount, "isSuccess会员充值失败", err)
-						return "", err
-					} else {
-						// 等待5秒进行签到操作
-						time.Sleep(5 * time.Second)
-						// 50%的几率签到
-						if RandomIntAndCompare(100, 80) {
-							// 1.获取用户签到信息
-							resp, respData, err := everydayCheckin.GetUserCheckInActivityData(ctx)
-							if err != nil {
-								return resp.Msg, err
-							}
-							if resp.Msg == "" {
-								return "该会员不满足本轮活动的签到条件", nil
-							}
-							//logger.Logger.Info("每日签到信息", res, respData)
-							id := respData.Data.ActivityId
-							if id == 0 {
-								logger.Logger.Warn("没有获取到用户签到信息")
-								return "", err
-							}
-							// 2.点击签到按钮
-							resp, err = everydayCheckin.ReceiveDailyCheckInRewardApi(ctx, id, 0)
-							if err != nil {
-								return resp.Msg, err
-							}
-							if resp.Msg != "Succeed" {
-								logger.Logger.Warn("每日签到失败", resp.Msg)
-								return resp.Msg, err
-							}
-							logger.Logger.Info("每日签到信息", resp.Msg)
-						}
-						return "", nil
-					}
+			} else {
+				// 不在黑名单中,40%的几率加入黑名单
+				if RandomIntAndCompare(100, 60) {
+					AddUserToBlackList(userinfo.UserID)
 				}
 			}
+			// 等待5秒，进行充值操作
+			time.Sleep(5 * time.Second)
+			moneny, _ := util.GenerateRandomInt(100, 250)
+			if resp, err := financialmanagement.ArtificialRechargeFunc(AdminCtx, userinfo.UserID, moneny, 1); err != nil {
+				logger.Logger.Warn(userAccount, "会员充值失败", err)
+				return resp.Msg, err
+			} else {
+				isSuccess := model.IsSuccess(resp)
+				if !isSuccess {
+					logger.Logger.Warn(userAccount, "isSuccess会员充值失败", err)
+					return "", err
+				} else {
+					// 等待5秒进行签到操作
+					time.Sleep(5 * time.Second)
+					// 50%的几率签到
+					if RandomIntAndCompare(100, 80) {
+						// 1.获取用户签到信息
+						resp, respData, err := everydayCheckin.GetUserCheckInActivityData(ctx)
+						if err != nil {
+							return resp.Msg, err
+						}
+						if resp.Msg == "" {
+							return "该会员不满足本轮活动的签到条件", nil
+						}
+						//logger.Logger.Info("每日签到信息", res, respData)
+						id := respData.Data.ActivityId
+						if id == 0 {
+							logger.Logger.Warn("没有获取到用户签到信息")
+							return "", err
+						}
+						// 2.点击签到按钮
+						resp, err = everydayCheckin.ReceiveDailyCheckInRewardApi(ctx, id, 0)
+						if err != nil {
+							return resp.Msg, err
+						}
+						if resp.Msg != "Succeed" {
+							logger.Logger.Warn("每日签到失败", resp.Msg)
+							return resp.Msg, err
+						}
+						logger.Logger.Info("每日签到信息", resp.Msg)
+					}
+					return "", nil
+				}
+			}
+			
 		}
 	}
 }

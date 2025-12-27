@@ -90,17 +90,7 @@ func GenerateSignatureFromJSON(jsonInput interface{}, verifyPwd *string) (string
 
 // 运行检测签名
 func RunCheckSign() {
-	jsonStr := `{
-  "userName": "911208199708",
-  "inviteCode": "5KWVU3W",
-  "password": "qwer1234",
-  "code": "141373",
-  "loginType": "Mobile",
-  "language": "en",
-  "random": 472521829598,
-  "signature": "",
-  "timestamp": 1765171927
-}
+	jsonStr := `{"userName":"912512220670","password":"qwer1234","loginType":"Mobile","deviceId":"","browserId":"ljbbvo1zp2p59farn9pw3pe4yegj6uv8","packageName":"","random":508302399935,"language":"en","signature":"","timestamp":1766566032}
 `
 
 	sig, _ := GenerateSignatureFromJSON(jsonStr, nil)

@@ -174,7 +174,7 @@ func AdminRodAutRequest[P any](ctx *context.Context, api string, payload *P, pay
 		}
 		if string(respBody) == "" {
 			logger.Logger.Warn("AdminRodAutRequest请求返回为空")
-			return nil, nil, fmt.Errorf("AdminRodAutRequest请求返回为空:%s", err)
+			return []byte{}, nil, fmt.Errorf("AdminRodAutRequest请求返回为空:%s", err)
 		}
 		var result model.Response
 		err = json.Unmarshal([]byte(string(respBody)), &result)

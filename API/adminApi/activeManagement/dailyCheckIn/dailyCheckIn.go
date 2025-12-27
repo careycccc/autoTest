@@ -69,7 +69,7 @@ var (
 	// 活动充值金额
 	AcitveRechargeAmount float64
 	// 当日触达人数
-	TouchNumber int = 39
+	TouchNumber int = 85
 	// 完成充值任务的人数
 	ActiveRechargeNumber []int
 	// 派发总奖励的金额
@@ -116,6 +116,13 @@ func GetDailyCheckInInfo() {
 		// 去重充值会员ID  经过合并就已经去重了
 		RechargeNumber = len(summarList) // 充值人数(有充值行为的人)
 	}
+}
+
+// 查询领取记录
+func GetReceiveRecord() {
+	// RunDailyCheckInUserList()
+	//RunDailyCheckInActivityList()
+	RunDailyCheckInUserList()
 }
 
 // 查询昨天的数据，主要是数据报表
@@ -223,14 +230,17 @@ func PrepareDataByCsv() []string {
 // 准备数据和签到活动
 func RunDailyCheckInActivity() {
 	// 数据准备
-	PrepareData()
-	time.Sleep(time.Second * 5)
+	// PrepareData()
+	// time.Sleep(time.Second * 5)
 	//从csv里面读取数据出来
 	list := PrepareDataByCsv()
 	//SingleCheckinTask("911030331131")
 	// ExcelEverDayCheckIn(list)
 	for _, item := range list {
 		time.Sleep(time.Second * 5)
-		SingleCheckinTask(item)
+		res ,_ := SingleCheckinTask(item)
+		if res == "5479" {
+			continue
+		}
 	}
 }
