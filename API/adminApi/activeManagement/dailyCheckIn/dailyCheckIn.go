@@ -231,7 +231,7 @@ func PrepareDataByCsv() []string {
 func RunDailyCheckInActivity() {
 	// 数据准备
 	// PrepareData()
-	// time.Sleep(time.Second * 5)
+	//time.Sleep(time.Second * 5)
 	//从csv里面读取数据出来
 	list := PrepareDataByCsv()
 	//SingleCheckinTask("911030331131")

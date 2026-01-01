@@ -48,7 +48,7 @@ func SingleCheckinTask(userAccount string) (string, error) {
 			}
 			// 等待5秒，进行充值操作
 			time.Sleep(5 * time.Second)
-			moneny, _ := util.GenerateRandomInt(100, 250)
+			moneny, _ := util.GenerateRandomInt(2000, 3000)
 			if resp, err := financialmanagement.ArtificialRechargeFunc(AdminCtx, userinfo.UserID, moneny, 1); err != nil {
 				logger.Logger.Warn(userAccount, "会员充值失败", err)
 				return resp.Msg, err

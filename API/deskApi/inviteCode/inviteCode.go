@@ -54,7 +54,7 @@ func ProcessNewUser(inviteCode string) error {
 		} else {
 			time.Sleep(time.Second * 2)
 			// 充值
-			moneny, _ := util.GenerateRandomInt(2000, 5000)
+			moneny, _ := util.GenerateRandomInt(4000, 8000)
 			if _, err := financialmanagement.ArtificialRechargeFunc(ctxAdmin, int(userId), moneny, 1); err != nil {
 				logger.LogError("绑定层级的后台人工充值失败", err)
 				continue
@@ -243,14 +243,14 @@ func min(a, b int) int {
 
 // RunInvite 一键执行
 func RunInvite() {
-	inviteCode := "KJBUK3N" // 总代的邀请码
+	inviteCode := "Q2ZRS7N" // 总代的邀请码
 	ctx, err := login.RunAdminSitLogin()
 	if err != nil {
 		fmt.Println("❌ 登录失败:", err)
 		return
 	}
 
-	subordinates := []int{25, 10,12,3} // 第1层2人，第2层3人
+	subordinates := []int{10,10,5} // 第1层2人，第2层3人
 	userDB = make(map[string]*User)
 	fmt.Printf("🎯 开始绑定到总代: %s, 层级: %v\n", inviteCode, subordinates)
 

@@ -91,7 +91,7 @@ func CountElements[T comparable](slice []T) map[T]int {
 // 查询奖励领取记录表
 func RunDailyCheckInUserList() {
 	// 获取第一天的签到用户
-	_, userIds1, err := GetDailyCheckInUserList(AdminCtx, "vip6-7每日签到", "2025-12-24 00:00:00", "2025-12-26 23:59:59")
+	_, userIds1, err := GetDailyCheckInUserList(AdminCtx, "vip6-7每日签到", "2025-12-24 00:00:00", "2025-12-30 23:59:59")
 	if err != nil {
 		logger.LogError("获取每日签到用户奖励领取记录失败", err)
 		return
@@ -117,6 +117,8 @@ func RunDailyCheckInUserList() {
 	    // 转成账号并且修改密码
 		amount := common.IdToAmountAndUpdatePassword(AdminCtx,userid)
 		amountList = append(amountList, amount)
+		// 进行解冻
+		memberlist.UpdateUserStateApi(AdminCtx,userid,1)
 	}
 	accounts.WriteConcurrently(amountList, 5, CSVADDR) // 保存到csv中
 

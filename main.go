@@ -1,7 +1,7 @@
 package main
 
 import (
-	rechargewheel "autoTest/API/deskApi/rechargeWheel"
+	withdrawcash "autoTest/API/deskApi/WithdrawCash"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -32,7 +32,7 @@ func main() {
 	// invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
 	// invitationcarousel.RunSpinInvitedWheel() // 当前用户邀请转盘自动邀请下级
 	// invitecode.RunInvite() // 多级下级邀请
-	// withdrawcash.RunWithDrawCase() // 提现
+	withdrawcash.RunWithDrawCase() // 提现
 	// topup.RunRechargeGoods()
 	// GameBetOrders.RunGameBetOrders()              // 后台投注订单的查询
 	// platformreports.RunGetPlatRptStatisticPageList() // 平台报表-> 每日汇总报表
@@ -49,10 +49,11 @@ func main() {
 	//financialmanagement.RunArtificialRechargeFunc() // 人工充值
 	//boomer.RunTasks()
 	// everydayCheckin.RunEverydayCheckIn()    // 每日签到活动
-	// dailycheckin.GetReceiveRecord() // 每日签到活动报表查看
-	// dailycheckin.RunDailyCheckInActivity() // 每日签到活动
-	rechargewheel.RunAddWheel()  // 一键为后台配置4个充值转盘的配置
+	//dailycheckin.GetReceiveRecord() // 每日签到活动报表查看
+	//dailycheckin.RunDailyCheckInActivity() // 每日签到活动
+	// rechargewheel.RunAddWheel()  // 一键为后台配置4个充值转盘的配置
 }
+
 
 
 

@@ -3,8 +3,6 @@ package dailycheckin
 import (
 	rechargeorders "autoTest/API/adminApi/financialManagement/rechargeOrders"
 	memberlist "autoTest/API/adminApi/memberList/memberList"
-	registerapi "autoTest/API/deskApi/registerApi"
-	"autoTest/API/utils"
 	"autoTest/PressureMeasurementModule/accounts"
 	"autoTest/store/config"
 	"autoTest/store/logger"
@@ -117,20 +115,20 @@ func SummarizeOrders(items []rechargeorders.OrderItem) []SummaryItem {
 // 第一次的数据准备  10个vip0的新用户，10个vip1的老用户，10个vip2的老用户
 func PrepareData() {
 	// 随机10个vip0的新用户
-	userList := utils.RandmoUserId(10)
-	for _, v := range userList {
-		// 进行注册
-		_, _, err := registerapi.NewGeneralAgentRegister(v)
-		if err != nil {
-			logger.Logger.Error("签到活动的数据准备-注册新用户失败", err)
-			return
-		}
-	}
+	// userList := utils.RandmoUserId(10)
+	// for _, v := range userList {
+	// 	// 进行注册
+	// 	_, _, err := registerapi.NewGeneralAgentRegister(v)
+	// 	if err != nil {
+	// 		logger.Logger.Error("签到活动的数据准备-注册新用户失败", err)
+	// 		return
+	// 	}
+	// }
 
-	// vip的老用户
-	vipList := make([]string, 0, 200)
+	// // vip的老用户
+	 vipList := make([]string, 0, 200)
 	// 随机10个vip1,vip2的老用户
-	for i := 0; i <= 2; i++ {
+	for i := 12; i <= 12; i++ {
 		if _, userinfoList, err := memberlist.GetUserVipListApi(AdminCtx, 1, 20, 0, i); err != nil {
 			logger.Logger.Warn("GetUserVipListApi请求失败", err)
 			continue
@@ -158,9 +156,9 @@ func PrepareData() {
 		}
 	}
 	// 所有账号准备完毕
-	userList = append(userList, vipList...)
+	//userList = append(userList, vipList...)
 	//把账号写入到csv中
-	accounts.WriteConcurrently(userList, 5, CSVADDR)
+	accounts.WriteConcurrently(vipList, 5, CSVADDR)
 }
 
 // ====================================================================
