@@ -90,10 +90,12 @@ func GenerateSignatureFromJSON(jsonInput interface{}, verifyPwd *string) (string
 
 // 运行检测签名
 func RunCheckSign() {
-	jsonStr := `{"userName":"912512220670","password":"qwer1234","loginType":"Mobile","deviceId":"","browserId":"ljbbvo1zp2p59farn9pw3pe4yegj6uv8","packageName":"","random":508302399935,"language":"en","signature":"","timestamp":1766566032}
-`
+	jsonStr := `{"championId": 500019, "language": "en", "random": 467252996243, "signature": "", "timestamp": 1767758374}`
 
-	sig, _ := GenerateSignatureFromJSON(jsonStr, nil)
-	fmt.Println(sig)
-	// 输出：EC77D73D8B868D0A7650CD0B32D16895   ← 完全一致！一模一样！
+	sig, err := GenerateSignatureFromJSON(jsonStr, nil)
+	if err != nil {
+		fmt.Printf("生成签名失败: %v\n", err)
+		return
+	}
+	fmt.Println("生成的签名:", sig)
 }

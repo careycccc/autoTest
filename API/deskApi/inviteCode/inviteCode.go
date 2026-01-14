@@ -25,14 +25,16 @@ type User struct {
 
 // 定义用户详细信息的全局变量
 type UserDetail struct {
-	ctx         *context.Context //保存用户的上下文
+	ctx         *context.Context // 保存用户的上下文
 	userAccount string           // 保存用户的账号（手机号或邮箱）
 }
 
 // 全局用户详情映射
-var userDetails = make([]*UserDetail, 0)
-var userDB = make(map[string]*User)
-var dbMutex sync.Mutex
+var (
+	userDetails = make([]*UserDetail, 0)
+	userDB      = make(map[string]*User)
+	dbMutex     sync.Mutex
+)
 
 // ProcessNewUser 处理新用户的逻辑,充值和投注
 func ProcessNewUser(inviteCode string) error {
@@ -54,13 +56,13 @@ func ProcessNewUser(inviteCode string) error {
 		} else {
 			time.Sleep(time.Second * 2)
 			// 充值
-			moneny, _ := util.GenerateRandomInt(4000, 8000)
+			moneny, _ := util.GenerateRandomInt(5000, 15000)
 			if _, err := financialmanagement.ArtificialRechargeFunc(ctxAdmin, int(userId), moneny, 1); err != nil {
 				logger.LogError("绑定层级的后台人工充值失败", err)
 				continue
 			} else {
 				// 上面的充值结束后台，在进行投注
-				time.Sleep(time.Second)
+				time.Sleep(time.Second * 2)
 				// 先把投注的结果随机出来
 				gameCode, betContent, amount, betMultiple := lotterygameapi.GetBetResult()
 				if err := lotterygameapi.RunBetFunc(userDetail.ctx, gameCode, betContent, userDetail.userAccount, amount, betMultiple); err != nil {
@@ -96,6 +98,7 @@ func BindOneLevel(ctx *context.Context, parentInviteCodes []string, mobileCount 
 	errChan := make(chan error, mobileCount)
 
 	for i, mobile := range mobileIds {
+		time.Sleep(time.Second) // 避免请求过快
 		wg.Add(1)
 		func(mobile string, parentIndex int) {
 			defer wg.Done()
@@ -110,7 +113,7 @@ func BindOneLevel(ctx *context.Context, parentInviteCodes []string, mobileCount 
 				return
 			}
 
-			time.Sleep(time.Second) // 避免请求过快
+			time.Sleep(time.Second * 2) // 避免请求过快
 			// 把下级用户的信息保存起来
 			userDetail := &UserDetail{
 				ctx:         &subCtx,
@@ -243,14 +246,14 @@ func min(a, b int) int {
 
 // RunInvite 一键执行
 func RunInvite() {
-	inviteCode := "Q2ZRS7N" // 总代的邀请码
+	inviteCode := "BNEHQWN" // 总代的邀请码
 	ctx, err := login.RunAdminSitLogin()
 	if err != nil {
 		fmt.Println("❌ 登录失败:", err)
 		return
 	}
 
-	subordinates := []int{10,10,5} // 第1层2人，第2层3人
+	subordinates := []int{5, 3, 2} // 第1层2人，第2层3人
 	userDB = make(map[string]*User)
 	fmt.Printf("🎯 开始绑定到总代: %s, 层级: %v\n", inviteCode, subordinates)
 
@@ -259,6 +262,6 @@ func RunInvite() {
 		fmt.Println("❌ 执行失败:", err)
 	} else {
 		fmt.Println("\n🎉 执行成功!")
-		//printHierarchy(inviteCode)
+		// printHierarchy(inviteCode)
 	}
 }

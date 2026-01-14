@@ -54,7 +54,7 @@ func GetSignature(body map[string]interface{}, verifyPwd *string) string {
 			}
 		}
 	}
-	//第一版写法，如果有错误就改成这个
+	// 第一版写法，如果有错误就改成这个
 	// 转换为 JSON 字符串
 	// jsonData, err := json.Marshal(filteredObj)
 	// if err != nil {
@@ -153,13 +153,12 @@ func isEmpty(value interface{}) bool {
 
 // 用来解析请求
 func Unmarshal(strResbody string) (result map[string]interface{}) {
-	//是一个字符串
+	// 是一个字符串
 	error := json.Unmarshal([]byte(strResbody), &result)
 	if error != nil {
 		log.Fatalf("解析响应失败~~:%v", error)
 	}
 	return
-
 }
 
 // 读取yaml
@@ -362,25 +361,25 @@ func calculateLuhnCheckDigit(partialCard string) int {
 
 // IFSCBankCode 常见银行代码（确保均为4位大写字母）
 var IFSCBankCode = []string{
-	"SBIN",  // State Bank of India
-	"HDFC",  // HDFC Bank
-	"ICIC",  // ICICI Bank
-	"AXIS",  // Axis Bank
-	"KKBK",  // Kotak Mahindra Bank
-	"PNB",   // Punjab National Bank
-	"BARB",  // Bank of Baroda
-	"CANB",  // Canara Bank
-	"UNION", // Union Bank of India
-	"INDB",  // IndusInd Bank
-	"KARB",  // Karnataka Bank
-	"CNRB",  // Canara Bank (alternate)
-	"SCBL",  // Standard Chartered Bank
-	"MAHB",  // Bank of Maharashtra
-	"VIJB",  // Vijaya Bank
-	"IOBA",  // Indian Overseas Bank
-	"FDRL",  // Federal Bank
-	"IBKL",  // IDBI Bank
-	"UCOB",  // UCO Bank
+	"SBIN", // State Bank of India
+	"HDFC", // HDFC Bank
+	"ICIC", // ICICI Bank
+	"AXIS", // Axis Bank
+	"KKBK", // Kotak Mahindra Bank
+	//"PNB",   // Punjab National Bank
+	"BARB", // Bank of Baroda
+	"CANB", // Canara Bank
+	//"UNION", // Union Bank of India
+	"INDB", // IndusInd Bank
+	"KARB", // Karnataka Bank
+	"CNRB", // Canara Bank (alternate)
+	"SCBL", // Standard Chartered Bank
+	"MAHB", // Bank of Maharashtra
+	"VIJB", // Vijaya Bank
+	"IOBA", // Indian Overseas Bank
+	"FDRL", // Federal Bank
+	"IBKL", // IDBI Bank
+	"UCOB", // UCO Bank
 }
 
 // RandomIFSC 生成随机IFSC代码

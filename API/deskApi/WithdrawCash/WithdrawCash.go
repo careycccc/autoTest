@@ -25,18 +25,19 @@ type withDrawaInfo struct {
 }
 
 // 提现
-func RunWithDrawCase() {
-	userName := "911227381373"
+func RunWithDrawCase(userName string) {
+	// userName := "911114199718"
 
-	_, deskCtx, err := registerapi.GeneralAgentRegister(userName)
+	_, ctx, err := registerapi.GeneralAgentRegister(userName)
 	if err != nil {
 		logger.LogError("提现登录失败", err)
 		return
 	}
-	if deskCtx == nil {
+	if ctx == nil {
 		logger.LogError("提现登录返回空 context", nil)
 		return
 	}
+	deskCtx := ctx
 
 	// 三个 channel
 	moneyChan := make(chan *float64, 1)
@@ -122,6 +123,7 @@ func RunWithDrawCase() {
 }
 
 // 提现
+// 提现
 func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaasbalance.AllWithdraw, ch chan<- *withDrawaInfo) bool {
 	// 判断用户是否有钱，每日提现金额是否有值，提现是否有次数，打码量是否满足
 	if *money <= 0.0 {
@@ -150,33 +152,66 @@ func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaas
 		// 如果为-1，则表示没有限制，实际还需去找提现的金额，这个先临时处理一下
 		TodayWithdrawAmount = 9999
 	}
-PT:
-	canWithDrawCaseListLen := len(canWithDrawCaseList)
-	i := 0
-	if canWithDrawCaseListLen == 1 {
-		i = 0
-	} else {
-		i = utils.RandInt(0, canWithDrawCaseListLen-1)
+
+	// 使用for循环替代PT标签
+	maxRetries := 10 // 最大重试次数
+	retryCount := 0
+	var i int
+
+	for retryCount < maxRetries {
+		retryCount++
+		canWithDrawCaseListLen := len(canWithDrawCaseList)
+		if canWithDrawCaseListLen == 1 {
+			i = 0
+		} else {
+			i = utils.RandInt(0, canWithDrawCaseListLen-1)
+		}
+		logger.Logger.Info("随机出来的值", canWithDrawCaseList[i])
+		// 随机出来的值 大于 今日可提现的总金额
+		if canWithDrawCaseList[i] <= TodayWithdrawAmount {
+			break // 找到合适的金额，退出循环
+		}
 	}
-	logger.Logger.Info("随机出来的值", canWithDrawCaseList[i])
-	// 随机出来的值 大于 今日可提现的总金额
-	if canWithDrawCaseList[i] > TodayWithdrawAmount {
-		goto PT
+
+	if retryCount >= maxRetries {
+		logger.Logger.Warn("达到最大重试次数，无法找到合适的提现金额", nil)
+		ch <- &withDrawaInfo{
+			withDrawaAmont: 0,
+			withDrawaType:  "",
+		}
+		return false
 	}
+
 	// 筛选出了可以提现的金额
 	// 随机提现的大类
 	WithdrawCategoryListLen := len(allwithdraw.WithdrawCategoryList)
-PT2:
-	j := 0
-	if WithdrawCategoryListLen == 1 {
-		j = 0
-	} else {
-		j = utils.RandInt(0, WithdrawCategoryListLen-1)
+
+	// 重置重试计数器
+	retryCount = 0
+	var j int
+
+	// 使用for循环替代PT2标签
+	for retryCount < maxRetries {
+		retryCount++
+		if WithdrawCategoryListLen == 1 {
+			j = 0
+		} else {
+			j = utils.RandInt(0, WithdrawCategoryListLen-1)
+		}
+		if allwithdraw.WithdrawCategoryList[j].WithdrawType != "UPI" {
+			break // 找到合适的通道，退出循环
+		}
 	}
-	if allwithdraw.WithdrawCategoryList[j].WithdrawType == "UPI" {
-		// 提现类型目前不支持upi
-		goto PT2
+
+	if retryCount >= maxRetries {
+		logger.Logger.Warn("达到最大重试次数，无法找到合适的提现通道", nil)
+		ch <- &withDrawaInfo{
+			withDrawaAmont: 0,
+			withDrawaType:  "",
+		}
+		return false
 	}
+
 	withdrawType := allwithdraw.WithdrawCategoryList[j].WithdrawType
 	withdrawId := allwithdraw.WithdrawCategoryList[j].ID
 	logger.Logger.Info("提现通道", withdrawType)

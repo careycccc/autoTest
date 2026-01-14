@@ -7,6 +7,7 @@ import (
 	"autoTest/store/request"
 	"context"
 	"encoding/json"
+	"errors"
 )
 
 // 提现出款
@@ -46,7 +47,11 @@ func GetCanWithdrawChannelByOrderApi(ctx *context.Context, userId int, withdrawi
 		if resp, err := model.ParseResponse(respBoy); err != nil {
 			return model.HandlerErrorRes(model.ErrorLoggerType("/api/WithdrawOrder/GetCanWithdrawChannelByOrder解析失败", err)), 0, err
 		} else {
+			if len(response.Data) == 0 {
+				return model.HandlerErrorRes(model.ErrorLoggerType("/api/WithdrawOrder/GetCanWithdrawChannelByOrder返回数据为空", nil)), 0, errors.New("没有可用的提现通道")
+			}
 			return resp, response.Data[0].ChannelId, nil
+
 		}
 	}
 }

@@ -1,7 +1,7 @@
 package lotterygameapi
 
 import (
-	login "autoTest/API/deskApi/loginApi"
+	registerapi "autoTest/API/deskApi/registerApi"
 	"autoTest/store/logger"
 	"context"
 	"fmt"
@@ -12,13 +12,31 @@ import (
 
 // 负责组装投注
 func BetRun(userName string) error {
-	//userName := "919111997678"
+	// userName := "919111997678"
 	// 进行前台登录
-	ctx := context.Background()
-	if _, tokenCtx, err := login.LoginY1(ctx, userName, "qwer1234"); err != nil {
-		fmt.Println(err)
+	// ctx := context.Background()
+	// if _, tokenCtx, err := login.LoginY1(ctx, userName, config.ADMIN_PWD); err != nil {
+	// 	fmt.Println(err)
+	// 	return err
+	// } else {
+	// 	// // 绑定银行卡
+	// 	// withdrawcash.RunWithDrawCase(tokenCtx)
+	// 	// 进行投注
+	// 	// 先把投注的结果随机出来
+	// 	gameCode, betContent, amount, betMultiple := GetBetResult()
+	// 	if err := RunBetFunc(tokenCtx, gameCode, betContent, userName, amount, betMultiple); err != nil {
+	// 		return err
+	// 	} else {
+	// 		return nil
+	// 	}
+	// }
+	//
+	if _, tokenCtx, err := registerapi.GeneralAgentRegister(userName); err != nil {
+		logger.Logger.Warn("投注的地方的短信登录报错信息", err)
 		return err
 	} else {
+		//  绑定银行卡
+		// withdrawcash.RunWithDrawCase(tokenCtx)
 		// 进行投注
 		// 先把投注的结果随机出来
 		gameCode, betContent, amount, betMultiple := GetBetResult()
@@ -45,7 +63,7 @@ func GetBetResult() (gameCode, betContent string, amount, betMultiple int) {
 	betContentList := []string{"Color_Green", "Color_Violet", "Color_Red", "BigSmall_Big", "BigSmall_Small"}
 	betContent = betContentList[num1]
 	num2 := RandomInt(4)
-	amountList := []int{10, 20, 50, 100}
+	amountList := []int{50, 20, 50, 100}
 	amount = amountList[num2]
 	num3 := RandomInt(4)
 	betMultipleList := []int{10, 20, 50, 100}
@@ -81,7 +99,7 @@ func RunBetFunc(ctx *context.Context, gameCode, betContent, userName string, amo
 		return err
 	}
 	if balance == 0.0 {
-		//fmt.Println("------------------------余额为0,不可以投注------------------------")
+		// fmt.Println("------------------------余额为0,不可以投注------------------------")
 		logger.Logger.Warn("余额为0,不可以投注")
 		return fmt.Errorf("------------------------余额为0,不可以投注------------------------")
 	} else {
@@ -96,7 +114,7 @@ func RunBetFunc(ctx *context.Context, gameCode, betContent, userName string, amo
 				logger.Logger.Info("投注成功", resp)
 			}
 		} else {
-			//fmt.Println("不可以投注")
+			// fmt.Println("不可以投注")
 			logger.Logger.Warn("当期期号,不可以投注")
 			return fmt.Errorf("不可以投注")
 		}

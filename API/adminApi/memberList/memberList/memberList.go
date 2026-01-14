@@ -57,12 +57,15 @@ func GetUserIdApi(ctx *context.Context, account string) (*model.Response, int64,
 			if resp, err := model.ParseResponse(respBoy); err != nil {
 				return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList响应解析失败", err)), -1, err
 			} else {
-				return resp, response.Data.List[0].UserId, nil
+				if len(response.Data.List) == 0 {
+					return resp, -1, nil
+				} else {
+					return resp, response.Data.List[0].UserId, nil
+				}
 			}
 		}
 
 	}
-
 }
 
 // 提取用户邀请码
@@ -219,7 +222,7 @@ func GetUserListApi(ctx *context.Context, pageSize, userNumber int, userType int
 /*
 userNumber 传入一个数字，返回对应数量的用户列表的详细信息
 userType 0 正式账号 1 测试账号 2 游客账号
-vip等级
+vipLevel vip等级
 *
 */
 func GetUserVipListApi(ctx *context.Context, pageSize, userNumber int, userType int8, vipLevel int) (*model.Response, []*UserInfo, error) {

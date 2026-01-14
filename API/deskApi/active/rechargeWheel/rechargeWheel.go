@@ -3,7 +3,7 @@ package rechargewheel
 import (
 	financialmanagement "autoTest/API/adminApi/financialManagement"
 	"autoTest/API/adminApi/login"
-	getGiftInfo "autoTest/API/deskApi/activeGift/GetGiftInfo"
+	getgiftinfo "autoTest/API/deskApi/activeGift/Getgiftinfo"
 	getuserinfo "autoTest/API/deskApi/getUserinfo"
 	registerapi "autoTest/API/deskApi/registerApi"
 	"autoTest/API/utils"
@@ -26,7 +26,7 @@ type UserRechargeWheelInfo struct {
 
 // 获取当前用户充值转盘的，开启信息，剩余旋转次数
 func GetUserRechargeWheelInfo(ctx *context.Context) (UserRechargeWheelInfo, error) {
-	if _, rechargeWheelInfo, err := getGiftInfo.GetGiftInfoApi(ctx); err != nil {
+	if _, rechargeWheelInfo, err := getgiftinfo.GetGiftInfoApi(ctx); err != nil {
 		return UserRechargeWheelInfo{}, err
 	} else {
 		info := UserRechargeWheelInfo{
@@ -237,7 +237,7 @@ func CallRechargeWheelCondition(value1 int8) (*getRechargeWheelInfo, *context.Co
 			logger.LogError("充值转盘随机生成用户注册登录后获取用户信息失败", err)
 			return &getRechargeWheelInfo{isShow: false, wheelNumber: 0, amount: 0.0}, ctx
 		}
-		//logger.Logger.Info("充值转盘随机生成用户注册登录后获取用户信息", resp, userInfo)
+		// logger.Logger.Info("充值转盘随机生成用户注册登录后获取用户信息", resp, userInfo)
 		userId := int(userInfo.UserID)
 		// 并发处理
 		wg := &sync.WaitGroup{}
@@ -249,7 +249,7 @@ func CallRechargeWheelCondition(value1 int8) (*getRechargeWheelInfo, *context.Co
 				logger.LogError("设置充值转盘条件失败", err)
 				return
 			}
-			//logger.Logger.Info("充值转盘条件设置成功")
+			// logger.Logger.Info("充值转盘条件设置成功")
 		}(wg, adminCtx, value1)
 
 		// 设置充值金额
@@ -331,7 +331,7 @@ func RunRechargeWheelCondition(value1 int8) {
 			if info.isOpenRechargeWheel {
 				logger.Logger.Info("二充第二次充值转盘是否开启", info.isOpenRechargeWheel)
 				// 开启就是正常的
-				//再次充值
+				// 再次充值
 				if _, err := financialmanagement.ArtificialRechargeFunc(ctx, rechargeWheelInfo.userId, rechargeWheelInfo.amount, 2); err != nil {
 					logger.LogError("二充充值转盘设置充值金额失败", err)
 					return
@@ -388,7 +388,7 @@ func RunRechargeWheelCondition(value1 int8) {
 				} else {
 					if info.isOpenRechargeWheel {
 						logger.Logger.Info("三充第三次充值转盘是否开启", info.isOpenRechargeWheel)
-						//再次充值
+						// 再次充值
 						time.Sleep(1 * time.Second) // 等待1秒，确保后台处理完成
 						if _, err := financialmanagement.ArtificialRechargeFunc(ctx, rechargeWheelInfo.userId, rechargeWheelInfo.amount, 2); err != nil {
 							logger.LogError("充值转盘设置充值金额失败", err)
@@ -416,5 +416,4 @@ func RunRechargeWheelCondition(value1 int8) {
 		logger.LogError("输入的参数不正确,只能是0,1,2,3", nil)
 		return
 	}
-
 }
