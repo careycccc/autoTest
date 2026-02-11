@@ -6,12 +6,12 @@ import (
 	"strings"
 )
 
-// AssignSliceToStructMap 将切片的值一一对应赋值到结构体字段并返回 map[string]interface{}
+// AssignSliceToStructMap 将切片的值一一对应赋值到结构体字段并返回 map[string]any
 // structObj结构体对象，sliceObj 切片对象
 // 含有 Authorization
-func AssignSliceToStructMap(structObj interface{}, sliceObj []interface{}) (map[string]interface{}, error) {
+func AssignSliceToStructMap(structObj any, sliceObj []any) (map[string]any, error) {
 	// 初始化结果 map
-	result := make(map[string]interface{})
+	result := make(map[string]any)
 
 	// 检查结构体是否为指针
 	structVal := reflect.ValueOf(structObj)
@@ -64,7 +64,7 @@ func AssignSliceToStructMap(structObj interface{}, sliceObj []interface{}) (map[
 				field.Set(reflect.ValueOf(bearerValue))
 				result[fieldName] = bearerValue
 			} else {
-				return nil, fmt.Errorf("Authorization field must be string or interface{} type, got %v", field.Type())
+				return nil, fmt.Errorf("Authorization field must be string or any type, got %v", field.Type())
 			}
 		} else {
 			// 其他字段的赋值
@@ -82,8 +82,8 @@ func AssignSliceToStructMap(structObj interface{}, sliceObj []interface{}) (map[
 }
 
 // 初始化结构体，并且返回map
-func InitStructToMap(strct interface{}, values []interface{}) (map[string]interface{}, error) {
-	result := make(map[string]interface{})
+func InitStructToMap(strct any, values []any) (map[string]any, error) {
+	result := make(map[string]any)
 
 	v := reflect.ValueOf(strct).Elem() // 获取结构体值
 	t := v.Type()
@@ -113,8 +113,8 @@ func InitStructToMap(strct interface{}, values []interface{}) (map[string]interf
 }
 
 // StructToMap 将结构体初始化并将切片值映射到 map   // 可以解决嵌套结构体
-func StructToMap(structType interface{}, slice []interface{}) (map[string]interface{}, error) {
-	result := make(map[string]interface{})
+func StructToMap(structType any, slice []any) (map[string]any, error) {
+	result := make(map[string]any)
 
 	// 获取结构体类型
 	val := reflect.ValueOf(structType)
@@ -192,13 +192,13 @@ func StructToMap(structType interface{}, slice []interface{}) (map[string]interf
 	return result, nil
 }
 
-// FlattenMap 将嵌套的 map[string]interface{} 平铺为一层 map，忽略嵌套路径
-func FlattenMap(nestedMap map[string]interface{}) map[string]interface{} {
-	flatMap := make(map[string]interface{})
+// FlattenMap 将嵌套的 map[string]any 平铺为一层 map，忽略嵌套路径
+func FlattenMap(nestedMap map[string]any) map[string]any {
+	flatMap := make(map[string]any)
 
 	for key, value := range nestedMap {
 		// 如果值是嵌套 map，递归平铺
-		if nested, ok := value.(map[string]interface{}); ok {
+		if nested, ok := value.(map[string]any); ok {
 			// 将嵌套 map 的键值对直接合并到 flatMap
 			for nestedKey, nestedValue := range FlattenMap(nested) {
 				flatMap[nestedKey] = nestedValue // 后覆盖前

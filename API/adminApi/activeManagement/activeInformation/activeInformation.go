@@ -39,7 +39,7 @@ func AddActiveInformationFunc(ctx *context.Context, imgUrl, title string, Inform
 	api := "/api/ActivityInformation/Add"
 	payloadStruct := &ActiveInformationStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	paloadList := []interface{}{imgUrl, InformationType, title, sort, displayTarget, pageId, language, "", random, language, "", timestamp}
+	paloadList := []any{imgUrl, InformationType, title, sort, displayTarget, pageId, language, "", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest[ActiveInformationStruct](ctx, api, payloadStruct, paloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/ActivityInformation/Add 请求失败", err)), err
 	} else {

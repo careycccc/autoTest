@@ -22,8 +22,8 @@ headerFunc 表示需要处理的header的func
 token 需要传入的token值
 *
 */
-func PostGenericsFunc[P, H any](api string, payload *P, payloadList []interface{}, headerStruct *H,
-	headerList []interface{}, payloadFunc func(structType interface{}, slice []interface{}) (map[string]interface{}, error), headerFunc func(structType interface{}, slice []interface{}) (map[string]interface{}, error)) ([]byte, *http.Response, error) {
+func PostGenericsFunc[P, H any](api string, payload *P, payloadList []any, headerStruct *H,
+	headerList []any, payloadFunc func(structType any, slice []any) (map[string]any, error), headerFunc func(structType any, slice []any) (map[string]any, error)) ([]byte, *http.Response, error) {
 	// 结构体转 Map
 	payloadMap, err := payloadFunc(payload, payloadList)
 	if err != nil {
@@ -44,7 +44,7 @@ func PostGenericsFunc[P, H any](api string, payload *P, payloadList []interface{
 	return respBody, req, nil
 }
 
-type structSlice func(structType interface{}, slice []interface{}) (map[string]interface{}, error)
+type structSlice func(structType any, slice []any) (map[string]any, error)
 
 /*
 PostGenericsFuncFlatten 的需要进行结构体平铺的版本
@@ -59,8 +59,8 @@ headerFunc 表示需要处理的header的func
 token 需要传入的token值
 *
 */
-func PostGenericsFuncFlatten[P, H any](base_url, api string, payload *P, payloadList []interface{}, headerStruct *H,
-	headerList []interface{}, payloadFunc structSlice, headerFunc structSlice) ([]byte, *http.Response, error) {
+func PostGenericsFuncFlatten[P, H any](base_url, api string, payload *P, payloadList []any, headerStruct *H,
+	headerList []any, payloadFunc structSlice, headerFunc structSlice) ([]byte, *http.Response, error) {
 	// 结构体转 Map
 	payloadMap, err := payloadFunc(payload, payloadList)
 	if err != nil {

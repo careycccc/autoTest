@@ -31,7 +31,7 @@ func AddMemberActivityBlacklistApi(ctx *context.Context, activityBlockType int8,
 	payloadStruct := &UserActivityBlockStruct{}
 	remark := "测试11111"
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{remark, userIds, activityBlockType, random, language, "", timestamp}
+	payloadList := []any{remark, userIds, activityBlockType, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/UserActivityBlock/Add 请求失败", err)), err
 	} else {

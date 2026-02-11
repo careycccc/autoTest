@@ -36,7 +36,7 @@ func GetUserWithdrawWallet(ctx *context.Context, withdrawType string) (*model.Re
 	api := "/api/Withdraw/GetUserWithdrawWallet"
 	payloadStruct := &GetUserWithdrawWalletStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{withdrawType, random, language, "", timestamp}
+	payloadList := []any{withdrawType, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Withdraw/GetUserWithdrawWallet请求失败", err)), "", err
 	} else {

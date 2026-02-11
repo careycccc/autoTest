@@ -111,7 +111,7 @@ func RunBetFunc(ctx *context.Context, gameCode, betContent, userName string, amo
 			if err != nil {
 				logger.Logger.Error("BetWingo报错信息", err)
 			} else {
-				logger.Logger.Info("投注成功", resp)
+				logger.Logger.Info("投注信息", resp)
 			}
 		} else {
 			// fmt.Println("不可以投注")

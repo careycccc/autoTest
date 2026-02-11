@@ -71,7 +71,7 @@ func QueryGameBetOrders(ctx *context.Context, categoryType int8, startTime, endT
 	payloadStruct := &QueryBetRecordPageList{}
 	timestamp, random, language := request.GetTimeRandom()
 	// 临时处理总条数为2000条
-	payloadList := []interface{}{sortField, categoryType, startTime, endTime, sortField, 1, 2000, "Desc", random, language, "", timestamp}
+	payloadList := []any{sortField, categoryType, startTime, endTime, sortField, 1, 2000, "Desc", random, language, "", timestamp}
 	if respBody, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("api/ThirdGame/GetBetRecordPageList请求失败", err)), &BetRecordPageList{}, err
 	} else {

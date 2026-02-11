@@ -37,7 +37,7 @@ func UserActivityBlockAddApi(ctx *context.Context, userid string, activityBlockT
 	api := "/api/UserActivityBlock/Add"
 	payloadStruct := &UserActivityBlockAdd{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{config.Remark, userid, activityBlockType, random, language, "", timestamp}
+	payloadList := []any{config.Remark, userid, activityBlockType, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/UserActivityBlock/Add 请求失败", err)), err
 	} else {
@@ -59,7 +59,7 @@ func UserActivityBlockDeleteApi(ctx *context.Context, userid int, activityBlockT
 	api := "/api/UserActivityBlock/Delete"
 	payloadStruct := &UserActivityBlockDelete{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{config.Remark, userid, activityBlockType, random, language, "", timestamp}
+	payloadList := []any{config.Remark, userid, activityBlockType, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/UserActivityBlock/Delete 请求失败", err)), err
 	} else {
@@ -97,7 +97,7 @@ func UserActivityBlockIsInBlockApi(ctx *context.Context, userid string, activity
 	api := "/api/UserActivityBlock/GetPageList"
 	payloadStruct := &UserActivityBlockIsInBlock{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{userid, activityBlockType, 1, 20, "Desc", random, language, "", timestamp}
+	payloadList := []any{userid, activityBlockType, 1, 20, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/UserActivityBlock/GetPageList 请求失败", err)), false, err
 	} else {

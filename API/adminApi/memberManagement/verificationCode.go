@@ -29,7 +29,7 @@ type SendVerifiyCodeStruct struct {
 codeType 验证码类型 18是登录验证 1是注册验证
 *
 */
-func SendVerificationCode(userName string, codeType int8, ch chan struct{}) (*model.BetResponse, error) {
+func SendVerificationCode(VerifyCodeType int, userName string, codeType int8, ch chan struct{}) (*model.BetResponse, error) {
 	defer func() {
 		time.Sleep(time.Second)
 		ch <- struct{}{}
@@ -38,11 +38,11 @@ func SendVerificationCode(userName string, codeType int8, ch chan struct{}) (*mo
 	base_url := config.GoodsDeposit_URL
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &SendVerifiyCodeStruct{}
-	payloadList := []interface{}{1, userName, codeType, random, language, "", timestamp}
+	payloadList := []any{VerifyCodeType, userName, codeType, random, language, "", timestamp}
 	headerStruct := &model.DeskHeaderTenantIdStruct2{}
 	plant_h5 := config.REGISTER_URL
-	// heaerList := []interface{}{config.TENANTID, plant_h5, plant_h5, plant_h5}
-	heaerList := []interface{}{plant_h5, plant_h5}
+	// heaerList := []any{config.TENANTID, plant_h5, plant_h5, plant_h5}
+	heaerList := []any{plant_h5, plant_h5}
 	if respBoy, _, err := request.PostGenericsFuncFlatten(base_url, api, payloadStruct, payloadList, headerStruct, heaerList, request.StructToMap, request.InitStructToMap); err != nil {
 		errs := fmt.Errorf("/api/Home/SendVerifiyCode发送请求失败%s", err)
 		return model.HandlerErrorRes2(errs), err
@@ -71,10 +71,10 @@ type TifyResponse struct {
 		TotalPage  int        `json:"totalPage"`
 		TotalCount int        `json:"totalCount"`
 	} `json:"data"`
-	MsgParameters interface{} `json:"msgParameters"`
-	Code          int         `json:"code"`
-	Msg           string      `json:"msg"`
-	MsgCode       int         `json:"msgCode"`
+	MsgParameters any    `json:"msgParameters"`
+	Code          int    `json:"code"`
+	Msg           string `json:"msg"`
+	MsgCode       int    `json:"msgCode"`
 }
 
 // 定义结构体来映射JSON中的list项
@@ -108,7 +108,7 @@ func GetVerificationCode(ctx *context.Context, userName string) (*model.Response
 	api := "/api/Users/GetVerifyCodePageList"
 	payloadStruct := &QueryTifyStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{userName, 1, 20, "Desc", random, language, "", timestamp}
+	payloadList := []any{userName, 1, 20, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetVerifyCodePageList的请求失败", err)), "", err
 	} else {
@@ -133,19 +133,17 @@ func GetVerificationCode(ctx *context.Context, userName string) (*model.Response
 					MsgCode: -1,
 				}, "", nil
 			}
-
 		}
 
 	}
-
 }
 
 // 发送要验证码到接收验证码
-// codeType 验证码类型 18是登录验证 1是注册验证
-func SendToGetVerCode(ctx *context.Context, codeType int8, userName string) (*model.Response, string, error) {
+// codeType 验证码类型 18是登录验证 1是注册验证. 2是邮箱验证
+func SendToGetVerCode(ctx *context.Context, VerifyCodeType int, codeType int8, userName string) (*model.Response, string, error) {
 	ch := make(chan struct{}, 1)
 	// 1.发送验证码
-	SendVerificationCode(userName, codeType, ch)
+	SendVerificationCode(VerifyCodeType, userName, codeType, ch)
 	// 2.获取验证码
 	// 2.1需要后端登录
 	if resp, ctxToken, err := login.AdminSitLogin(ctx); err != nil {

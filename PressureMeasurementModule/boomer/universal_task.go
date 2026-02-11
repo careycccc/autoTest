@@ -21,8 +21,8 @@ func UniversalTaskWithRoundRobinToken(
 	targetRPS int64, // 目标 RPS（0 = 不限速）
 	taskDuration int64, // 最大运行时间（秒）
 	taskName string, // 任务名
-	bizFunc func(tokenCtx *context.Context, args ...interface{}) (int64, bool, string), // 你的业务函数
-	args ...interface{}, // 传给业务函数的其他参数
+	bizFunc func(tokenCtx *context.Context, args ...any) (int64, bool, string), // 你的业务函数
+	args ...any, // 传给业务函数的其他参数
 ) *boomer.Task {
 
 	log.Printf("万能压测任务启动：%s | 总请求 %d 次 | 目标 %d RPS | 最大运行 %d 秒 | token 轮询复用",
@@ -117,7 +117,7 @@ func getRoundRobinToken() *context.Context {
 //         500,       // 500 RPS
 //         60,        // 最大 60 秒
 //         "查询VIP信息",
-//         func(tokenCtx *context.Context, args ...interface{}) (int64, bool, string) {
+//         func(tokenCtx *context.Context, args ...any) (int64, bool, string) {
 //             return QueryVip(tokenCtx)
 //         },
 //     ))
@@ -128,7 +128,7 @@ func getRoundRobinToken() *context.Context {
 //         1000,
 //         120,
 //         "充值接口",
-//         func(tokenCtx *context.Context, args ...interface{}) (int64, bool, string) {
+//         func(tokenCtx *context.Context, args ...any) (int64, bool, string) {
 //             amount := args[0].(int)
 //             return Recharge(tokenCtx, amount)
 //         },
@@ -141,7 +141,7 @@ func getRoundRobinToken() *context.Context {
 //         100,
 //         3600,
 //         "下单接口",
-//         func(tokenCtx *context.Context, args ...interface{}) (int64, bool, string) {
+//         func(tokenCtx *context.Context, args ...any) (int64, bool, string) {
 //             return PlaceOrder(tokenCtx)
 //         },
 //     ))

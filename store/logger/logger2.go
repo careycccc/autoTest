@@ -52,14 +52,14 @@ func (enc *bufferEncoder) AppendArray(v zapcore.ArrayMarshaler) error {
 func (enc *bufferEncoder) AppendObject(v zapcore.ObjectMarshaler) error {
 	return fmt.Errorf("嵌套对象未实现")
 }
-func (enc *bufferEncoder) AppendReflected(v interface{}) error {
+func (enc *bufferEncoder) AppendReflected(v any) error {
 	fmt.Fprintf(enc.buf, "%v", v)
 	return nil
 }
 
 // EncodeEntry 将日志条目编码为 YAML 格式
 func (enc *yamlEncoder) EncodeEntry(entry zapcore.Entry, fields []zapcore.Field) (*buffer.Buffer, error) {
-	logEntry := make(map[string]interface{})
+	logEntry := make(map[string]any)
 
 	// 编码时间
 	if enc.config.TimeKey != "" && enc.config.EncodeTime != nil {
@@ -143,7 +143,7 @@ func (enc *yamlEncoder) AddUint32(key string, val uint32)                       
 func (enc *yamlEncoder) AddUint16(key string, val uint16)                              {}
 func (enc *yamlEncoder) AddUint8(key string, val uint8)                                {}
 func (enc *yamlEncoder) AddUintptr(key string, val uintptr)                            {}
-func (enc *yamlEncoder) AddReflected(key string, val interface{}) error                { return nil }
+func (enc *yamlEncoder) AddReflected(key string, val any) error                { return nil }
 func (enc *yamlEncoder) OpenNamespace(key string)                                      {}
 
 // NewYAMLEncoder 创建一个新的 YAML 编码器

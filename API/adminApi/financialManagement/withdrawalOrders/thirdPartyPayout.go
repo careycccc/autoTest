@@ -36,7 +36,7 @@ func GetCanWithdrawChannelByOrderApi(ctx *context.Context, userId int, withdrawi
 	api := "/api/WithdrawOrder/GetCanWithdrawChannelByOrder"
 	payloadStruct := &GetCanWithdrawChannelByOrder{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{config.Remark, userId, withdrawinfo.orderNo, withdrawinfo.createTime, random, language, "", timestamp}
+	payloadList := []any{config.Remark, userId, withdrawinfo.orderNo, withdrawinfo.createTime, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/WithdrawOrder/GetCanWithdrawChannelByOrder请求失败", err)), 0, err
 	} else {
@@ -70,7 +70,7 @@ func ThirdWithdrawApi(ctx *context.Context, userId int, withdrawinfo Withdrawinf
 	api := "/api/WithdrawOrder/ThirdWithdraw"
 	payloadStruct := &ThirdWithdrawStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{withdrawinfo.orderNo, userId, withdrawinfo.createTime, config.Remark, WithdrawChannelId, random, language, "", timestamp}
+	payloadList := []any{withdrawinfo.orderNo, userId, withdrawinfo.createTime, config.Remark, WithdrawChannelId, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes2(model.ErrorLoggerType("/api/WithdrawOrder/ThirdWithdraw请求失败", err)), err
 	} else {

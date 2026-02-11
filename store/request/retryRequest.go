@@ -24,12 +24,12 @@ var defaultRetryConfig = RetryConfig{
 }
 
 // RetryWrapper 通用的重试包装函数
-func RetryWrapper(fn interface{}, args ...interface{}) ([]interface{}, error) {
+func RetryWrapper(fn any, args ...any) ([]any, error) {
 	return retryWrapperWithConfig(fn, defaultRetryConfig, args...)
 }
 
 // retryWrapperWithConfig 带配置的重试包装函数
-func retryWrapperWithConfig(fn interface{}, config RetryConfig, args ...interface{}) ([]interface{}, error) {
+func retryWrapperWithConfig(fn any, config RetryConfig, args ...any) ([]any, error) {
 	// 获取函数的反射值
 	fnValue := reflect.ValueOf(fn)
 	if fnValue.Kind() != reflect.Func {
@@ -79,7 +79,7 @@ func retryWrapperWithConfig(fn interface{}, config RetryConfig, args ...interfac
 		}
 
 		// 准备返回值
-		output := make([]interface{}, len(results))
+		output := make([]any, len(results))
 		for i := range results {
 			output[i] = results[i].Interface()
 		}
@@ -94,7 +94,7 @@ func retryWrapperWithConfig(fn interface{}, config RetryConfig, args ...interfac
 // ctx := context.Background()
 // exampleFunc需要被重试的函数
 // ctx, 42, "test"是重试函数的参数，依次填写再后面就可以了，
-// results 是重试函数的返回值，是一个[]interface{}，可以依次用下标取出
+// results 是重试函数的返回值，是一个[]any，可以依次用下标取出
 // results, err := RetryWrapper(exampleFunc, ctx, 42, "test")
 // if err != nil {
 //     // 处理错误

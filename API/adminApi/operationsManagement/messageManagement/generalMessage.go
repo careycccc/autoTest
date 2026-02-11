@@ -33,7 +33,7 @@ func AddCarousel(ctx *context.Context, sort int, messageType, messageJumpType, c
 	api := "/api/Message/Add"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &AddCarouselStruct{}
-	payloadList := []interface{}{messageType, sort, messageJumpType, "3003/other/082900768-1997-3.webp", "en", customPopupId, targetType, random, language, "", timestamp}
+	payloadList := []any{messageType, sort, messageJumpType, "3003/other/082900768-1997-3.webp", "en", customPopupId, targetType, random, language, "", timestamp}
 	if respBody, _, err := requstmodle.AdminRodAutRequest[AddCarouselStruct](ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Message/Add请求失败", err)), err
 	} else {
@@ -69,7 +69,7 @@ func AddCustomizedCarousel(ctx *context.Context, sort int, messageType, messageJ
 	api := "/api/Message/Add"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &AddCustomizedCarouselStruct{}
-	payloadList := []interface{}{messageType, sort, messageJumpType, "3003/other/082900768-1997-3.webp", "en", customPopupId, buttonTxt, targetType, random, language, "", timestamp}
+	payloadList := []any{messageType, sort, messageJumpType, "3003/other/082900768-1997-3.webp", "en", customPopupId, buttonTxt, targetType, random, language, "", timestamp}
 	if respBody, _, err := requstmodle.AdminRodAutRequest[AddCustomizedCarouselStruct](ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Message/Add请求失败", err)), err
 	} else {

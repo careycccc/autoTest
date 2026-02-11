@@ -36,7 +36,7 @@ func GetVipLevelConfig(ctx *context.Context) (*model.Response, []getVipLevelConf
 	api := "/api/VipLevel/GetVipLevelConfig"
 	payloadStruct := model.BaseStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadData := []interface{}{random, language, "", timestamp}
+	payloadData := []any{random, language, "", timestamp}
 	if respBody, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, &payloadStruct, payloadData, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("api/VipLevel/GetVipLevelConfig 请求失败", err)), nil, err
 	} else {
@@ -108,7 +108,7 @@ func PickVipRewardApi(ctx *context.Context, rewardType, RewardLevel int8) (*mode
 	api := "/api/VipLevel/PickVipReward"
 	payloadStruct := &PickVipRewardstruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{rewardType, RewardLevel, random, language, "", timestamp}
+	payloadList := []any{rewardType, RewardLevel, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/VipLevel/PickVipReward请求失败", err)), err
 	} else {

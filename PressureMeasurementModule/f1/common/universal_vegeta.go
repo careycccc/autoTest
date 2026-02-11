@@ -64,8 +64,8 @@ func UniversalVegetaAttack(
 	duration time.Duration, // 最大运行时间
 	taskName string, // 任务名
 	reportFile string, // 报表文件名
-	bizFunc func(tokenCtx *context.Context, args ...interface{}) (int64, error), // 业务函数
-	args ...interface{},
+	bizFunc func(tokenCtx *context.Context, args ...any) (int64, error), // 业务函数
+	args ...any,
 ) {
 	log.Printf("启动万能压测：%s | 总请求 %d | 目标RPS/TPS %d | 时长 %v", taskName, totalRequests, tps, duration)
 
@@ -225,7 +225,7 @@ func generateReport(taskName, fileName string, startTime time.Time, success, fai
 		p99 = durations[int(math.Min(float64(n-1)*0.99, float64(n-1)))]
 	}
 
-	report := map[string]interface{}{
+	report := map[string]any{
 		"场景":              taskName,
 		"总请求数":            total,
 		"成功次数":            success,

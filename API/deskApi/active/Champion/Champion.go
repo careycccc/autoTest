@@ -18,7 +18,7 @@ func JoinChampion(ctx *context.Context, championId int) (*model.Response, error)
 	api := "/api/Activity/AddChampion"
 	payloadStruc := &ChampionStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{championId, random, language, "", timestamp}
+	payloadList := []any{championId, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruc, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Activity/AddChampion请求失败", err)), err
 	} else {

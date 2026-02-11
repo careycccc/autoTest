@@ -40,7 +40,7 @@ type SupportCategory struct {
 	MinAmount         float64           `json:"minAmount"`
 	MaxAmount         float64           `json:"maxAmount"`
 	RechargeGiftRatio RechargeGiftRatio `json:"rechargeGiftRatio"`
-	QuickConfigList   []interface{}     `json:"quickConfigList"`
+	QuickConfigList   []any     `json:"quickConfigList"`
 	GiftRatioType     int               `json:"giftRatioType"`
 	GiftAmount        float64           `json:"giftAmount"`
 }
@@ -48,8 +48,8 @@ type SupportCategory struct {
 type RechargeGiftRatio struct {
 	GiftRatioType     int         `json:"giftRatioType"`
 	ScaleType         int         `json:"scaleType"`
-	UniformRatioData  interface{} `json:"uniformRatioData"`
-	IntervalRatioList interface{} `json:"intervalRatioList"`
+	UniformRatioData  any `json:"uniformRatioData"`
+	IntervalRatioList any `json:"intervalRatioList"`
 }
 
 type GetRechargeGoods struct {

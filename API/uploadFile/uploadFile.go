@@ -23,7 +23,7 @@ import (
 // Define structs to match the JSON response structure
 type Response struct {
 	Data          []DataItem  `json:"data"`
-	MsgParameters interface{} `json:"msgParameters"`
+	MsgParameters any `json:"msgParameters"`
 	Code          int         `json:"code"`
 	Msg           string      `json:"msg"`
 	MsgCode       int         `json:"msgCode"`

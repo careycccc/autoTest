@@ -32,7 +32,7 @@ func GetUserLoginLogPageListApi(ctx *context.Context, startTime, endTime string)
 	api := "/api/RptUserInfo/GetUserLoginLogPageList"
 	payloadStruct := &MemberLoginReport{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{1, startTime, endTime, 1, 20, "Desc", random, language, "", timestamp}
+	payloadList := []any{1, startTime, endTime, 1, 20, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/RptUserInfo/GetUserLoginLogPageList请求失败", err)), 0, err
 	} else {

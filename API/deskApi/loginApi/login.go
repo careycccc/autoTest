@@ -31,10 +31,10 @@ func LoginY1(ctx context.Context, username, password string) (*model.Response, *
 	payloadStruct := &userloginY1{}
 	browserid := utils.GenerateCryptoRandomString(32)
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{username, password, "Mobile", "", browserid, "", random, language, "", timestamp}
+	payloadList := []any{username, password, "Mobile", "", browserid, "", random, language, "", timestamp}
 	url := config.GoodsDeposit_URL
 	headerStruct := &model.DeskHeaderTenantIdStruct2{}
-	headerList := []interface{}{url, url}
+	headerList := []any{url, url}
 	respBody, _, err := request.PostGenericsFuncFlatten(url, api, payloadStruct, payloadList, headerStruct, headerList, request.StructToMap, request.InitStructToMap)
 	if err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/Login 请求失败", err)), nil, err

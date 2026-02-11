@@ -21,7 +21,7 @@ func UpdateUserStateApi(ctx *context.Context, userId, state int) (*model.Respons
 	api := "/api/Users/UpdateState"
 	payloadStruct := &UpdateUserState{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{userId, state, random, language, "", timestamp}
+	payloadList := []any{userId, state, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/UpdateState请求失败", err)), err
 	} else {

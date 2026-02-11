@@ -58,7 +58,7 @@ func GetPlatRptStatisticPageList(ctx *context.Context) (*model.Response, *Report
 	payloadStruct := &GetPlatRptStatisticPage{}
 	timestamp, random, language := request.GetTimeRandom()
 	// 临时处理总条数为2000条
-	payloadList := []interface{}{starttime, endtime, 1, 1, 2000, "Desc", random, language, "", timestamp}
+	payloadList := []any{starttime, endtime, 1, 1, 2000, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/RptUserActivity/GetPlatRptStatisticPageList请求失败", err)), &Report{}, err
 	} else {

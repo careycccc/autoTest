@@ -4,6 +4,7 @@ import (
 	"autoTest/store/logger"
 	"autoTest/store/model"
 	"autoTest/store/request"
+	util "autoTest/store/utils"
 	"crypto/rand"
 	"fmt"
 	"math/big"
@@ -15,10 +16,10 @@ import (
 )
 
 // 处理基础的struct,返回payloadStruct, payloadList
-func BaseStructHandler() (*model.BaseStruct, []interface{}) {
+func BaseStructHandler() (*model.BaseStruct, []any) {
 	payloadStruct := &model.BaseStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{random, language, "", timestamp}
+	payloadList := []any{random, language, "", timestamp}
 	return payloadStruct, payloadList
 }
 
@@ -39,6 +40,38 @@ func RandmoUserId(generateCount int) []string {
 				logger.LogError("Error generating ID", err)
 				return
 			}
+			// 检查重复
+			if _, exists := generated.LoadOrStore(id, true); exists {
+				logger.Logger.Info("用户的重复检测", id)
+				collisionCount++
+			}
+			// 生成的用户id，可以进行接下来的操作
+			idList = append(idList, id)
+		}()
+	}
+
+	wg.Wait()
+	logger.Logger.Info("已生成的用户数", generateCount, "重复的用户数", collisionCount)
+	return idList
+}
+
+// 需要传入需要生成多少一个邮箱id的个数，并且返回邮箱id的列表
+func RandmoUserEmailId(generateCount int) []string {
+	// 模拟高并发生成100万个ID
+	var wg sync.WaitGroup
+	generated := sync.Map{} // 存储已生成的ID，检查重复
+	collisionCount := 0
+	// generateCount := 1000000
+	idList := make([]string, 0, generateCount)
+	for i := 0; i < generateCount; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			id := util.GenerateRandomEmail()
+			// if err != nil {
+			// 	logger.LogError("Error generating ID", err)
+			// 	return
+			// }
 			// 检查重复
 			if _, exists := generated.LoadOrStore(id, true); exists {
 				logger.Logger.Info("用户的重复检测", id)
@@ -92,10 +125,10 @@ func RandmoUserCount() (string, error) {
 }
 
 // WriteExcelFromSlice 封装函数：切片数据写入新Excel，返回完整Excel对象
-// 参数1: dataSlice - [][]interface{} 切片，每个子切片对应一行，每列顺序对应表头
+// 参数1: dataSlice - [][]any 切片，每个子切片对应一行，每列顺序对应表头
 // 参数2: sourcePath - string 源Excel文件路径
 // 返回: *excelize.File - 全新Excel文件对象（表头来自源文件第一行，数据从第二行开始）
-func WriteExcelFromSlice(dataSlice [][]interface{}, sourcePath string) (*excelize.File, error) {
+func WriteExcelFromSlice(dataSlice [][]any, sourcePath string) (*excelize.File, error) {
 	// 1. 读取源文件第一行表头
 	fSource, err := excelize.OpenFile(sourcePath)
 	if err != nil {

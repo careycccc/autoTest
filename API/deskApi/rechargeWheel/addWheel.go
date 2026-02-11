@@ -39,7 +39,7 @@ type RewardConfig struct {
 var (
 	timestamp, random, language = request.GetTimeRandom()
 	// 白银盘的增加
-	payloadListType1 = []interface{}{
+	payloadListType1 = []any{
 		1, // rechargeWheelType
 		0, // specialWheelUnlockCond
 
@@ -68,7 +68,7 @@ var (
 		timestamp,   // timestamp
 	}
 	// 黄金盘的增加
-	payloadListType2 = []interface{}{
+	payloadListType2 = []any{
 		2, // rechargeWheelType
 		0, // specialWheelUnlockCond
 	
@@ -96,7 +96,7 @@ var (
 		timestamp,   // timestamp
 	}
 	// 钻石盘的增加
-	payloadListType3 = []interface{}{
+	payloadListType3 = []any{
 		3, // rechargeWheelType
 		0, // specialWheelUnlockCond
 	
@@ -124,7 +124,7 @@ var (
 		"", // signature
 		timestamp,   // timestamp
 	}
-	payloadListType4 = []interface{}{
+	payloadListType4 = []any{
 		4, // rechargeWheelType
 		3777, // specialWheelUnlockCond（注意：这里不是0，是3777）
 	
@@ -155,7 +155,7 @@ var (
 	}
 )
 
-func AddWheel(ctx *context.Context,payloadList []interface{})(*model.Response,error) {
+func AddWheel(ctx *context.Context,payloadList []any)(*model.Response,error) {
 	api := "/api/RechargeWheel/Update"
 	payloadStruct := &RechargeWheelConfig{}
 	if respBody,_,err := requstmodle.AdminRodAutRequest(ctx,api,payloadStruct,payloadList,request.StructToMap); err != nil {
@@ -179,7 +179,7 @@ func RunAddWheel() {
 		logger.Logger.Warn("添加充值转盘的后台登录失败",err)
 		return
 	}else {
-		list := [][]interface{}{payloadListType1, payloadListType2, payloadListType3, payloadListType4}
+		list := [][]any{payloadListType1, payloadListType2, payloadListType3, payloadListType4}
 		for index, payload := range list {
 			if resp, err := AddWheel(ctx, payload); err != nil {
 				logger.Logger.Warn("添加充值转盘失败",index, err)

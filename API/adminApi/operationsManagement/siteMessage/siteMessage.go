@@ -93,7 +93,7 @@ func CreateMessage(
 	timestamp int64,
 	title string,
 	thumbnail string,
-) map[string]interface{} {
+) map[string]any {
 	// Create the Message struct with provided parameters and default values from JSON
 	message := Message{
 		BackstageDisplayName: backstageDisplayName,
@@ -146,8 +146,8 @@ func CreateMessage(
 		},
 	}
 
-	// Convert Message struct to map[string]interface{}
-	result := map[string]interface{}{
+	// Convert Message struct to map[string]any
+	result := map[string]any{
 		"backstageDisplayName": message.BackstageDisplayName,
 		"validType":            message.ValidType,
 		"jumpType":             message.JumpType,
@@ -192,7 +192,7 @@ func QuerySiteMessage(ctx *context.Context) (*model.Response, []int64, error) {
 	api := "/api/Inmail/GetPageList"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &QuerySiteMessageStruct{}
-	payloadList := []interface{}{1, 20, "Desc", random, language, "", timestamp}
+	payloadList := []any{1, 20, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Inmail/GetPageList请求失败", err)), nil, err
 	} else {
@@ -225,7 +225,7 @@ func ClickSiteMessage(ctx *context.Context, id int64) (*model.Response, error) {
 	api := "/api/Inmail/UpdateState"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &ClickSiteMessageStruct{}
-	payloadList := []interface{}{1, id, random, language, "", timestamp}
+	payloadList := []any{1, id, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Inmail/UpdateState请求失败", err)), err
 	} else {
@@ -238,12 +238,12 @@ func ClickSiteMessage(ctx *context.Context, id int64) (*model.Response, error) {
 }
 
 // 获取请求头的map
-func GetHeaderMap(ctx *context.Context) (map[string]interface{}, string) {
+func GetHeaderMap(ctx *context.Context) (map[string]any, string) {
 	// 请求头
 	headerStruct := &model.AdminHeaderStruct{}
 	header_url := config.ADMIN_SYSTEM_URL
 	token := (*ctx).Value(login.AuthTokenKey)
-	desSlice := []interface{}{header_url, header_url, header_url, token}
+	desSlice := []any{header_url, header_url, header_url, token}
 	headMap, err := request.AssignSliceToStructMap(headerStruct, desSlice)
 	if err != nil {
 		logger.LogError("headerMap获取失败", err)

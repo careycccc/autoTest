@@ -44,7 +44,7 @@ func GetGameUrlCommon(ctx *context.Context, gameCode, vendorCode, returnUrl stri
 	payloadStruct := &ThirdGameStruct{}
 	deviceTypeId := utils.GenerateCryptoRandomString(32)
 	timestamp, random, language := request.GetTimeRandom()
-	payloadData := []interface{}{gameCode, vendorCode, gameId, returnUrl, "H5", deviceTypeId, random, language, "", timestamp}
+	payloadData := []any{gameCode, vendorCode, gameId, returnUrl, "H5", deviceTypeId, random, language, "", timestamp}
 	if respBody, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadData, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("获取三方游戏的/api/ThirdGame/GetGameUrl请求失败", err)), &ThirdGameType{}, err
 	} else {

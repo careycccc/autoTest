@@ -31,7 +31,7 @@ func GoodsDepositRechargeApi(ctx *context.Context, rechargeCategoryId, rechargeG
 	returnUrl := config.GoodsDeposit_URL + "#/main"
 	urlInfo := config.GoodsDeposit_URL + ",status/rechargeStatus"
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{rechargeCategoryId, returnUrl, urlInfo, 0, rechargeGoodsId, random, language, "", timestamp}
+	payloadList := []any{rechargeCategoryId, returnUrl, urlInfo, 0, rechargeGoodsId, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Recharge/GoodsDepositRecharge请求失败", err)), err
 	} else {

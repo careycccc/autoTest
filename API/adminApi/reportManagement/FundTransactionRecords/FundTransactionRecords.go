@@ -49,7 +49,7 @@ type QueryResponse struct {
 		TotalPage  int `json:"totalPage"`
 		TotalCount int `json:"totalCount"`
 	} `json:"data"`
-	MsgParameters interface{} `json:"msgParameters"`
+	MsgParameters any `json:"msgParameters"`
 	Code          int         `json:"code"`
 	Msg           string      `json:"msg"`
 	MsgCode       int         `json:"msgCode"`
@@ -76,7 +76,7 @@ func FundtransactionrecordsApi(ctx *context.Context, financialTypeList []string,
 	payloadStruct := &QueryRequest{}
 	timestamp, random, language := request.GetTimeRandom()
 	// 暂时处理获取2000条数据
-	payloadList := []interface{}{financialTypeList, startTime, endTime, 1, 2000, "Desc", random, language, "", timestamp}
+	payloadList := []any{financialTypeList, startTime, endTime, 1, 2000, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Financial/GetPageList请求失败", err)), &FundTransactionInfoList{}, err
 	} else {
@@ -125,7 +125,7 @@ func GetFinancialTypeById(ctx *context.Context, userId int, financialTypeList []
 	payloadStruct := &QueryIdRequest{}
 	timestamp, random, language := request.GetTimeRandom()
 	// 暂时处理获取2000条数据
-	payloadList := []interface{}{financialTypeList, startTime, endTime, userId, 1, 1, 20, "Desc", random, language, "", timestamp}
+	payloadList := []any{financialTypeList, startTime, endTime, userId, 1, 1, 20, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Financial/GetPageList请求失败", err)), &QueryResponse{}, err
 	} else {

@@ -10,6 +10,7 @@ import (
 	"autoTest/store/request"
 	"autoTest/store/utils"
 	"context"
+	"fmt"
 )
 
 // 总代注册，没有上级的注册方式
@@ -30,7 +31,7 @@ func GeneralAgentRegister(userName string) (*model.Response, *context.Context, e
 	api := "/api/Home/MobileAutoLogin"
 	// 发送验证码，获取验证码
 	ctx := context.Background()
-	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 18, userName); err != nil {
+	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 1, 18, userName); err != nil {
 		logger.Logger.Warn("验证码发送信息", res)
 		logger.LogError("验证码发送信息", err)
 		return res, nil, err
@@ -40,7 +41,7 @@ func GeneralAgentRegister(userName string) (*model.Response, *context.Context, e
 		devices := utils.GenerateCryptoRandomString(16)
 		payloadStruct := &GeneralRegiterStruct{}
 		timestamp, random, language := request.GetTimeRandom()
-		payloadList := []interface{}{userName, verifyCode, devices, Fingerprint, "", "", "", random, language, "", timestamp}
+		payloadList := []any{userName, verifyCode, devices, Fingerprint, "", "", "", random, language, "", timestamp}
 		if respBody, _, err := requstmodle.DeskTrodRegRequest(&ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/MobileAutoLogin请求失败", err)), nil, err
 		} else {
@@ -60,6 +61,54 @@ func GeneralAgentRegister(userName string) (*model.Response, *context.Context, e
 	}
 }
 
+// 短信轰炸
+func GeneralAgentRegister1(userName string) {
+	api := "/api/Home/MobileAutoLogin"
+	// 发送验证码，获取验证码
+	ctx := context.Background()
+	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 1, 18, userName); err != nil {
+		logger.Logger.Warn("验证码发送信息", res)
+		logger.LogError("验证码发送信息", err)
+	} else {
+		fmt.Println(verifyCode)
+		fmt.Println(api)
+	}
+}
+
+// 进行爆破用的
+func GeneralAgentRegister2(userName, verifyCode string) (*model.Response, *context.Context, error) {
+	api := "/api/Home/MobileAutoLogin"
+	// 发送验证码，获取验证码
+	ctx := context.Background()
+
+	// 随机浏览器指纹
+	Fingerprint := utils.GenerateCryptoRandomString(32)
+	devices := utils.GenerateCryptoRandomString(16)
+	payloadStruct := &GeneralRegiterStruct{}
+	timestamp, random, language := request.GetTimeRandom()
+	payloadList := []any{userName, verifyCode, devices, Fingerprint, "", "", "", random, language, "", timestamp}
+	if respBody, _, err := requstmodle.DeskTrodRegRequest(&ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
+		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/MobileAutoLogin请求失败", err)), nil, err
+	} else {
+		// 解析tokne并进行保存
+		// 还需要解析出token进行保存
+		token, err := model.GetJsonToken(string(respBody))
+		if err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/MobileAutoLogin,token获取token失败", err)), nil, err
+		}
+		ctxToken := context.WithValue(ctx, login.DeskAuthTokenKey, token)
+		if resp, err := model.ParseResponse(respBody); err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/MobileAutoLogin解析失败", err)), nil, err
+		} else {
+			if resp.Code == 0 {
+				fmt.Println("成功")
+				return resp, &ctxToken, nil
+			}
+			return nil, nil, nil
+		}
+	}
+}
+
 type LoginRequest struct {
 	UserName    string `json:"userName"`
 	Password    string `json:"password"`
@@ -75,7 +124,7 @@ type LoginRequest struct {
 func NewGeneralAgentRegister(userName string) (*model.Response, *context.Context, error) {
 	// 发送验证码，获取验证码
 	ctx := context.Background()
-	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 1, userName); err != nil {
+	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 1, int8(1), userName); err != nil {
 		logger.Logger.Warn("验证码发送信息", res)
 		logger.LogError("验证码发送信息", err)
 		return res, nil, err
@@ -84,7 +133,7 @@ func NewGeneralAgentRegister(userName string) (*model.Response, *context.Context
 		payloadStruct := &LoginRequest{}
 		browserId := utils.GenerateCryptoRandomString(32)
 		timestamp, random, language := request.GetTimeRandom()
-		payloadList := []interface{}{userName, config.SUB_PWD, verifyCode, "Mobile", "", browserId, "", random, language, "", timestamp}
+		payloadList := []any{userName, config.SUB_PWD, verifyCode, "Mobile", "", browserId, "", random, language, "", timestamp}
 		if respBody, _, err := requstmodle.DeskTrodRegRequest(&ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/Register请求失败", err)), nil, err
 		} else {
@@ -101,5 +150,53 @@ func NewGeneralAgentRegister(userName string) (*model.Response, *context.Context
 			}
 		}
 	}
+}
 
+type RegisterRequest struct {
+	UserName            string `json:"userName"`
+	VerifyCode          string `json:"verifyCode"`
+	RegisterDevice      string `json:"registerDevice"`
+	RegisterFingerprint string `json:"registerFingerprint"`
+	InviteCode          string `json:"inviteCode"`
+	PackageName         string `json:"packageName"`
+	model.BaseStruct
+}
+
+// 随机注册一个总代邮箱账号
+
+func EmailRandomGeneralAgentRegister(userName string) (*model.Response, *context.Context, error) {
+	// 随机一个
+	// userName := utils.GenerateRandomEmail()
+	// 发送验证码，获取验证码
+	ctx := context.Background()
+	if res, verifyCode, err := membermanagement.SendToGetVerCode(&ctx, 2, int8(18), userName); err != nil {
+		logger.Logger.Warn("验证码发送信息", res)
+		logger.LogError("验证码发送信息", err)
+		return res, nil, err
+	} else {
+		api := "/api/Home/EmailAutoLogin"
+		payload := &RegisterRequest{}
+		timestamp, random, language := request.GetTimeRandom()
+		RegisterFingerprint := utils.GenerateCryptoRandomString(32)
+		payloadList := []any{userName, verifyCode, "", RegisterFingerprint, "", "", random, language, "", timestamp}
+		if respBody, _, err := requstmodle.DeskTrodRegRequest(&ctx, api, payload, payloadList, request.StructToMap); err != nil {
+			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/EmailAutoLogin请求失败", err)), nil, err
+		} else {
+			if string(respBody) == "" {
+				return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/EmailAutoLogin respBoy为空", err)), nil, err
+			} else {
+				// 解析token出来
+				token, err := model.GetJsonToken(string(respBody))
+				if err != nil {
+					return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/EmailAutoLogin,token获取token失败", err)), nil, err
+				}
+				ctxToken := context.WithValue(ctx, login.DeskAuthTokenKey, token)
+				if resp, err := model.ParseResponse(respBody); err != nil {
+					return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/EmailAutoLogin解析失败", err)), nil, err
+				} else {
+					return resp, &ctxToken, nil
+				}
+			}
+		}
+	}
 }

@@ -26,10 +26,10 @@ func AdminSitLogin(ctx *context.Context) (*model.Response, *context.Context, err
 	api := "/api/Login/Login"
 	playStruct := &AdminLogin{}
 	timestamp, random, language := request.GetTimeRandom()
-	playList := []interface{}{config.ADMIN_UERNAME, config.ADMIN_PWD, random, language, "", timestamp}
+	playList := []any{config.ADMIN_UERNAME, config.ADMIN_PWD, random, language, "", timestamp}
 	headerStruct := &model.BaseHeaderStruct{}
 	headerUrl := config.ADMIN_SYSTEM_URL
-	headerList := []interface{}{headerUrl, headerUrl, headerUrl}
+	headerList := []any{headerUrl, headerUrl, headerUrl}
 	if respBody, _, err := request.PostGenericsFuncFlatten(headerUrl, api, playStruct, playList, headerStruct, headerList, request.StructToMap, request.InitStructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Login/Login 请求失败", err)), nil, err
 	} else {

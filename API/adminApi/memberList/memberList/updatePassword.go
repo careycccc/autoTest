@@ -18,7 +18,7 @@ func UpdatePassword(ctx *context.Context, userid int64, password string) (*model
 	api := "/api/Users/UpdatePassword"
 	payloadStruct := &UpdataPasswordstruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{userid, password, random, language, "", timestamp}
+	payloadList := []any{userid, password, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/UpdatePassword请求失败", err)), err
 	} else {

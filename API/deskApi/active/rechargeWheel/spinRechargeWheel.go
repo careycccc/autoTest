@@ -26,7 +26,7 @@ func SpinRechargeWheelApi(ctx *context.Context, rechargeWheelType int8) (*model.
 	api := "/api/Activity/SpinRechargeWheel"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &SpinRechargeWheel{}
-	payloadList := []interface{}{rechargeWheelType, random, language, "", timestamp}
+	payloadList := []any{rechargeWheelType, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Activity/SpinRechargeWheel 请求失败", err)), err
 	} else {

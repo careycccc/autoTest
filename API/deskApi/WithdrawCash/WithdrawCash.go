@@ -25,8 +25,8 @@ type withDrawaInfo struct {
 }
 
 // 提现
-func RunWithDrawCase(userName string) {
-	// userName := "911114199718"
+func RunWithDrawCase() {
+	userName := "911029199740"
 
 	_, ctx, err := registerapi.GeneralAgentRegister(userName)
 	if err != nil {
@@ -161,6 +161,14 @@ func WithDrawCase(ctx *context.Context, money *float64, allwithdraw *recoversaas
 	for retryCount < maxRetries {
 		retryCount++
 		canWithDrawCaseListLen := len(canWithDrawCaseList)
+		if canWithDrawCaseListLen == 0 {
+			// 不是商品模式，是需要手动赋值
+			canWithDrawCaseList = []float64{100, 200, 300, 400, 500, 600, 700, 800, 900, 1000}
+			i = utils.RandInt(0, len(canWithDrawCaseList)-1)
+			if canWithDrawCaseList[i] <= TodayWithdrawAmount {
+				break // 找到合适的金额，退出循环
+			}
+		}
 		if canWithDrawCaseListLen == 1 {
 			i = 0
 		} else {
@@ -266,7 +274,7 @@ func WithdrawApplyApi(ctx *context.Context, Amount float64, WithdrawCategoryId i
 		return &model.BetResponse{}, nil
 	}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{Amount, walletId, WithdrawCategoryId, WithdrawType, config.WithdrawPassword, random, language, "", timestamp}
+	payloadList := []any{Amount, walletId, WithdrawCategoryId, WithdrawType, config.WithdrawPassword, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes2(model.ErrorLoggerType("/api/Withdraw/WithdrawApply请求失败", err)), err
 	} else {
@@ -337,7 +345,7 @@ func GetWithdrawHistoryApi(ctx *context.Context, startTime, endTime int64) (*mod
 	api := "/api/Withdraw/GetWithdrawHistory"
 	payloadStruct := &WithdrawalRequest{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{"", "", startTime, endTime, 1, 20, random, language, "", timestamp}
+	payloadList := []any{"", "", startTime, endTime, 1, 20, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Withdraw/GetWithdrawHistory请求报错", err)), nil, err
 	} else {

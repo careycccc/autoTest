@@ -55,7 +55,7 @@ func GetDailyCheckInUserList(ctx *context.Context, activityName, startDate, endD
 	api := "/api/DailyCheckIn/GetDailyCheckInUserList"
 	payloadStruct := &GetDailyCheckInUserListStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{activityName, startDate, endDate, 1, 200, "Desc", random, language, "", timestamp}
+	payloadList := []any{activityName, startDate, endDate, 1, 200, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("", err)), nil, err
 	} else {

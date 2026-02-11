@@ -4,7 +4,7 @@ import (
 	financialmanagement "autoTest/API/adminApi/financialManagement"
 	"autoTest/API/adminApi/login"
 	memberlist "autoTest/API/adminApi/memberList/memberList"
-	withdrawcash "autoTest/API/deskApi/WithdrawCash"
+	lotterygameapi "autoTest/API/betApi/LotteryGameApi"
 	"autoTest/store/config"
 	"autoTest/store/logger"
 	sutils "autoTest/store/utils"
@@ -61,9 +61,9 @@ func RandUserTopupGame() {
 	} else {
 		adminCtx = ctx
 	}
-	UserAmount := make([]*memberlist.UserInfo, 0, 100)
+	UserAmount := make([]*memberlist.UserInfo, 0, 200)
 	// 从后台获取用户列表
-	for i := 5; i < 7; i++ {
+	for i := 0; i < 6; i++ {
 		if _, userList, err := memberlist.GetUserVipListApi(adminCtx, 1, 20, 0, i); err != nil {
 			continue
 		} else {
@@ -94,12 +94,12 @@ func RandUserTopupGame() {
 		}
 		userAmount := IdToAmountAndUpdatePassword(adminCtx, int(user.UserId))
 		// 前台登录并进行投注
-		// if err := lotterygameapi.BetRun(userAmount); err != nil {
-		// 	logger.LogError("前台投注失败", err)
-		// }
+		if err := lotterygameapi.BetRun(userAmount); err != nil {
+			logger.LogError("前台投注失败", err)
+		}
 		// amountList = append(amountList, userAmount)
 		// 绑定银行卡,提现
-		withdrawcash.RunWithDrawCase(userAmount) // 提现
+		// withdrawcash.RunWithDrawCase(userAmount) // 提现
 	}
 	// // 保存到csv中
 	// err = accounts.WriteConcurrently(amountList, 5, config.CSVADDR) // 保存到csv中
@@ -130,4 +130,36 @@ func RandUserTopupGame() {
 	// 		}
 	// 	}
 	// }
+}
+
+// 选择用户进行充值，投注
+func ToupBet() {
+	userIdList := []int{5944753, 5944752, 5944751, 5944750, 5944749, 5944748, 5944747}
+	var adminCtx *context.Context
+	// 后台登录
+	ctx, err := login.RunAdminSitLogin()
+	if err != nil {
+		logger.LogError("随机从用户列表中选择用户进行充值后台登录失败", err)
+		return
+	} else {
+		adminCtx = ctx
+	}
+	for _, userId := range userIdList {
+		time.Sleep(time.Second * 2)
+		// 充值
+		money, err := sutils.GenerateRandomInt(config.MIN_MONENY, config.MAX_MONENY)
+		if err != nil {
+			logger.Logger.Warn("生成随机金额失败", err)
+			continue
+		}
+		if _, err := financialmanagement.ArtificialRechargeFunc(adminCtx, userId, money, 2); err != nil {
+			logger.Logger.Warn("人工充值失败", err)
+			continue
+		}
+		userAmount := IdToAmountAndUpdatePassword(adminCtx, userId)
+		// 前台登录并进行投注
+		if err := lotterygameapi.BetRun(userAmount); err != nil {
+			logger.LogError("前台投注失败", err)
+		}
+	}
 }

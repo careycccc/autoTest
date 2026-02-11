@@ -29,7 +29,7 @@ func ArtificialRechargeFunc(ctx *context.Context, userid int, rechargeAmount flo
 	api := "/api/ArtificialRechargeRecord/ArtificialRecharge"
 	payloadStruct := &ManualRecharge{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{3, rechargeAmount, "carey3003", amountOfCode, userid, random, language, "", timestamp}
+	payloadList := []any{3, rechargeAmount, "carey3003", amountOfCode, userid, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/ArtificialRechargeRecord/ArtificialRecharge请求失败", err)), err
 	} else {

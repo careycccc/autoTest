@@ -63,7 +63,7 @@ func GetRechargeOrderPageListApi(ctx *context.Context, startTime, endTime int64)
 	api := "/api/RechargeOrder/GetRechargeOrderPageList"
 	payloadStruct := &RechargeOrder{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{"Payed", startTime, endTime, 1, 1, 2000, "Desc", random, language, "", timestamp}
+	payloadList := []any{"Payed", startTime, endTime, 1, 1, 2000, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/RechargeOrder/GetRechargeOrderPageList请求失败", err)), &RechargeOrderResponse{}, err
 	} else {
@@ -99,7 +99,7 @@ func GetRechargeOrderByIdApi(ctx *context.Context, userid int, startTime, endTim
 	api := "/api/RechargeOrder/GetRechargeOrderPageList"
 	payloadStruct := &GetRechargeOrderById{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{userid, startTime, endTime, nil, nil, 1, 1, 20, "Desc", random, language, "", timestamp}
+	payloadList := []any{userid, startTime, endTime, nil, nil, 1, 1, 20, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/RechargeOrder/GetRechargeOrderPageList请求失败", err)), &RechargeOrderResponse{}, err
 	} else {
@@ -136,7 +136,7 @@ func ClickRechargeOrderApi(ctx *context.Context, userId int, actualAmount float6
 	api := "/api/RechargeOrder/ManualAuditRechargeOrder"
 	payloadStruct := &OrderDetail{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{userId, orderNo, actualAmount, createTime, config.Remark, random, language, "", timestamp}
+	payloadList := []any{userId, orderNo, actualAmount, createTime, config.Remark, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/RechargeOrder/ManualAuditRechargeOrder请求失败", err)), err
 	} else {

@@ -12,7 +12,7 @@ import (
 )
 
 // f1 业务函数 —— 正确处理三返回值
-func getUserVipInfoBizFunc(tokenCtx *context.Context, args ...interface{}) (int64, error) {
+func getUserVipInfoBizFunc(tokenCtx *context.Context, args ...any) (int64, error) {
 	if tokenCtx == nil {
 		return 0, fmt.Errorf("tokenCtx is nil")
 	}

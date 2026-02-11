@@ -25,14 +25,14 @@ type IssnumResponse struct {
 }
 
 // 获取当期的期号
-func GetNowBetNumber(token, betType, lotteryType string) (map[string]interface{}, error) {
+func GetNowBetNumber(token, betType, lotteryType string) (map[string]any, error) {
 	api := "/webapi/kv/issue/" + betType
 	// 获取路径地址
 	base_url := config.WMG_H5
 	// 获取请求头
 
 	headMap := GetIssNunmberHeaderFunc(token, betType, lotteryType)
-	k := make(map[string]interface{})
+	k := make(map[string]any)
 	respBody, _, err := request.GetRequest(base_url, api, headMap, k)
 	if err != nil {
 		//fmt.Printf("%v", err)
@@ -45,7 +45,7 @@ func GetNowBetNumber(token, betType, lotteryType string) (map[string]interface{}
 		//fmt.Printf("响应期号解析失败%v", error)
 		return nil, error
 	}
-	nowBetNumber := map[string]interface{}{
+	nowBetNumber := map[string]any{
 		"startTime":      response.Data.StartTime,      // 开始时间
 		"endTime":        response.Data.EndTime,        // 结束时间
 		"issueNumber":    response.Data.IssueNumber,    // 期号
@@ -92,7 +92,7 @@ betType 投注的方式 wingo 30s  wingo1min  wingo 3min  wing 5min
 lotteryType 彩票类型  WinGo
 *
 */
-func GetIssNunmberHeaderFunc(token, betType, lotteryType string) map[string]interface{} {
+func GetIssNunmberHeaderFunc(token, betType, lotteryType string) map[string]any {
 	// result := "https://h5.wmgametransit.com/WinGo/"
 	result := config.WMG_H5 + lotteryType
 	if token == "" {
@@ -104,7 +104,7 @@ func GetIssNunmberHeaderFunc(token, betType, lotteryType string) map[string]inte
 		r2 := "&RedirectUrl=" + config.PLANT_H5 + "%2Fgame%2Fcategory%3FcategoryCode%3DC202505280608510046&Beck=0"
 		result = result + betType + r1 + token + r2
 	}
-	return map[string]interface{}{
+	return map[string]any{
 		"Referer": result,
 	}
 }

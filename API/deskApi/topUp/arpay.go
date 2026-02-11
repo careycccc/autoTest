@@ -27,7 +27,7 @@ func ArpayRequestApi(ctx *context.Context, amount int) (*model.Response, error) 
 	api := "/api/Recharge/DepositRecharge"
 	payloadStruct := &ArpayRequest{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{700055, "https://arplatsaassit1.club/#/main", "https://arplatsaassit1.club,status/rechargeStatus", 0, amount, random, language, "", timestamp}
+	payloadList := []any{700055, "https://arplatsaassit1.club/#/main", "https://arplatsaassit1.club,status/rechargeStatus", 0, amount, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Recharge/DepositRecharge 请求失败", err)), err
 	} else {

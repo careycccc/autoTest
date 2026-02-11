@@ -46,7 +46,7 @@ func GetWithdrawLockPageListApi(ctx *context.Context, userId int, WithdrawType s
 	api := "/api/WithdrawOrder/GetWithdrawLockPageList"
 	payloadStruct := &GetWithdrawLockPageList{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{userId, WithdrawType, minWithdrawAmount, maxWithdrawAmount, 0, 1, 20, "Desc", random, language, "", timestamp}
+	payloadList := []any{userId, WithdrawType, minWithdrawAmount, maxWithdrawAmount, 0, 1, 20, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/WithdrawOrder/GetWithdrawLockPageList请求失败", err)), nil, err
 	} else {
@@ -83,7 +83,7 @@ func LockWithdrawOrderApi(ctx *context.Context, userId int, withdrawinfo *Withdr
 	api := "/api/WithdrawOrder/LockWithdrawOrder"
 	payloadStruct := &LockWithdrawOrder{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{userId, withdrawinfo.orderNo, withdrawinfo.createTime, config.Remark, random, language, "", timestamp}
+	payloadList := []any{userId, withdrawinfo.orderNo, withdrawinfo.createTime, config.Remark, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes2(model.ErrorLoggerType("/api/WithdrawOrder/LockWithdrawOrder请求失败", err)), err
 	} else {

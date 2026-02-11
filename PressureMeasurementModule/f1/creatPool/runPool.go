@@ -78,7 +78,7 @@ func RunPoolTasks() {
 				rps = float64(total) / duration
 			}
 
-			report := map[string]interface{}{
+			report := map[string]any{
 				"场景":          "登录接口压测",
 				"总尝试次数":       total,
 				"成功次数":        atomic.LoadUint64(&success),

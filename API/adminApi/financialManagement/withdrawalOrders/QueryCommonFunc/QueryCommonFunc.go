@@ -36,7 +36,7 @@ type QueryWithdrawaResponse struct {
 func QueryCommonFuncApi(ctx *context.Context, api string, startTime, endTime int64) (*model.Response, []int, error) {
 	payloadStruct := &QueryWithdrawaAmountStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{startTime, endTime, 1, "", 1, 2000, "Desc", random, language, "", timestamp}
+	payloadList := []any{startTime, endTime, 1, "", 1, 2000, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType(api, err)), nil, err
 	} else {

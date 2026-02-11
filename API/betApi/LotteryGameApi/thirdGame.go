@@ -22,8 +22,8 @@ type ThirdGameStruct struct {
 
 // 定义与 JSON 结构对应的结构体
 type Response struct {
-	Data          interface{} `json:"data"`          // 使用 interface{} 处理 null
-	MsgParameters interface{} `json:"msgParameters"` // 使用 interface{} 处理 null
+	Data          any `json:"data"`          // 使用 any 处理 null
+	MsgParameters any `json:"msgParameters"` // 使用 any 处理 null
 	Code          int         `json:"code"`
 	Msg           string      `json:"msg"`
 	MsgCode       int         `json:"msgCode"`
@@ -42,11 +42,11 @@ func ThirdGameFunc(token, gameCode string) (string, error) {
 	returnRurl := config.PLANT_H5 + "/game?categoryCode=C202505280608510046"
 	deviceTypeId := utils.GenerateCryptoRandomString(32)
 	timestamp, random, language := request.GetTimeRandom()
-	payloadData := []interface{}{gameCode, "ARLottery", 10003, returnRurl, "PC", deviceTypeId, random, language, "", timestamp}
+	payloadData := []any{gameCode, "ARLottery", 10003, returnRurl, "PC", deviceTypeId, random, language, "", timestamp}
 	// 请求头的实例
 	headerStruct := &model.AdminHeaderStruct{}
 	h5_y1 := config.PLANT_H5
-	headerData := []interface{}{h5_y1, h5_y1, h5_y1, token}
+	headerData := []any{h5_y1, h5_y1, h5_y1, token}
 	if resp, _, err := request.PostGenericsFuncFlatten(base_url, api, payloadStruct, payloadData, headerStruct, headerData, request.StructToMap, request.AssignSliceToStructMap); err != nil {
 		logger.LogError("/api/ThirdGame/GetGameUrl报错消息", err)
 		return "", err
@@ -58,7 +58,7 @@ func ThirdGameFunc(token, gameCode string) (string, error) {
 			logger.LogError("/api/ThirdGame/GetGameUrl响应结果反序列化失败", err)
 			return "", err
 		}
-		result := response.Data.(map[string]interface{})["url"]
+		result := response.Data.(map[string]any)["url"]
 		// 寻找token
 		// 查找第一个匹配
 		res := result.(string)

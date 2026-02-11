@@ -184,7 +184,7 @@ func RestoreFromExcel(filename string) ([]UserDailyCheckInInfo, error) {
 
 // toBool 将各种形式的布尔值转换为 bool
 // 支持: bool 类型、字符串 ("true"/"false"/"1"/"0"/"是"/"否"/"yes"/"no" 等)、数字 (非0为true)
-func toBool(v interface{}) bool {
+func toBool(v any) bool {
 	if v == nil {
 		return false
 	}

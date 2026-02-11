@@ -3,7 +3,6 @@ package invitationcarousel
 import (
 	adminLogin "autoTest/API/adminApi/login"
 	memberlist "autoTest/API/adminApi/memberList/memberList"
-	lotterygameapi "autoTest/API/betApi/LotteryGameApi"
 	commfunc "autoTest/API/commFunc"
 	login "autoTest/API/deskApi/loginApi"
 	registerapi "autoTest/API/deskApi/registerApi"
@@ -16,6 +15,7 @@ import (
 	sutils "autoTest/store/utils"
 	"context"
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"sync"
 	"time"
@@ -50,7 +50,6 @@ func ClickSpinInvitedWheel(ctx *context.Context) (*model.Response, bool, error) 
 			return resp, response.Data.IsFirstInvitedWheel, err
 		}
 	}
-
 }
 
 // 定义结构体来映射 JSON 数据
@@ -78,7 +77,6 @@ func ClickShareLink(ctx *context.Context) (*model.Response, string, error) {
 			return resp, response.Data.InviteCode, err
 		}
 	}
-
 }
 
 // 定义结构体来映射 JSON 数据
@@ -97,6 +95,7 @@ type ClickSpinningTurntableResponse struct {
 func ClickSpinningTurntable(ctx *context.Context) (*model.Response, float64, bool, error) {
 	api := "/api/Activity/SpinInvitedWheel"
 	payloadStruct, payloadList := utils.BaseStructHandler()
+	time.Sleep(time.Second)
 	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.InitStructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Activity/GetUserInviteLinkAddress请求失败", err)), -1.1, false, err
 	} else {
@@ -145,7 +144,8 @@ func RunSpinInvitedWheel() error {
 // 注册的方式，
 func RunSpinInvitedWheelWork() error {
 	// 随机生成账号
-	userList := utils.RandmoUserId(config.GeneralAgentNumber)
+	// userList := utils.RandmoUserId(config.GeneralAgentNumber)
+	userList := utils.RandmoUserEmailId(config.GeneralAgentNumber)
 	logger.Logger.Info("Generated userList with length:", len(userList))
 
 	// 把生成的账号进行总代的方式进行注册
@@ -157,8 +157,8 @@ func RunSpinInvitedWheelWork() error {
 			return err
 		}
 
-		// 进行注册
-		_, ctxToken, err := registerapi.NewGeneralAgentRegister(userList[i])
+		// 总代进行注册
+		_, ctxToken, err := registerapi.EmailRandomGeneralAgentRegister(userList[i])
 		if err != nil {
 			logger.Logger.Error("GeneralAgentRegister failed for user", userList[i], "with error:", err)
 			return err
@@ -268,7 +268,7 @@ func ClickWheelWithdrawFunc(amount float64, ctx *context.Context) (*model.Respon
 	api := "/api/Activity/SumitInvitedWheelWithdraw"
 	payloadStruct := &ClickWheelWithdraw{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{amount, random, language, "", timestamp}
+	payloadList := []any{amount, random, language, "", timestamp}
 	if respBody, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Activity/SumitInvitedWheelWithdraw请求失败", err)), err
 	} else {
@@ -315,13 +315,14 @@ func RunTaskWhille(yqCode string, monenyCount float64, ctx *context.Context) {
 	}
 	logger.Logger.Info("当前用户的转盘总额", moneny)
 	// 还差提现金额的获取
-	// time.Sleep(time.Second * 5)
-	// _, errs := ClickWheelWithdrawFunc(moneny, ctx) // 点击转盘提现
-	// if errs != nil {
-	// 	//fmt.Println("点击转盘提现失败", err)
-	// 	logger.LogError("点击转盘提现失败", errs)
-	// 	return
-	// }
+	time.Sleep(time.Second * 5)
+	resp, errs := ClickWheelWithdrawFunc(moneny, ctx) // 点击转盘提现
+	if errs != nil {
+		// fmt.Println("点击转盘提现失败", err)
+		logger.LogError("点击转盘提现失败", errs)
+		return
+	}
+	fmt.Println("点击转盘提现结果", resp)
 }
 
 // 并行邀请人
@@ -330,7 +331,7 @@ func RunTaskWhille(yqCode string, monenyCount float64, ctx *context.Context) {
 func TaskWhille(id int, wg *sync.WaitGroup, yqCode *string, monenyCount *float64, lock *sync.Mutex) {
 	defer wg.Done()
 	// 随机生成账号
-	userAmount, _ := utils.RandmoUserCount()
+	userAmount := sutils.GenerateRandomEmail()
 	// 使用单个锁保护对三个公共数据的联合操作
 	lock.Lock()
 	// 调用 RunWhille，传入当前公共数据值
@@ -346,7 +347,7 @@ monenyCount 邀请转盘的充值金额
 **/
 func RunWhille(userAmount string, yqCode string, monenyCount float64) error {
 	// 发送注册
-	if _, ctxToken, err := registerapi.RegisterMobileLoginFunc(userAmount, yqCode); err != nil {
+	if _, _, err := registerapi.EmailRegisterApi(userAmount, yqCode); err != nil {
 		return err
 	} else {
 		logger.Logger.Info("注册成功", userAmount)
@@ -364,14 +365,14 @@ func RunWhille(userAmount string, yqCode string, monenyCount float64) error {
 		}
 		logger.Logger.Info("userid的值", userId)
 		commfunc.UpdatePasswordAndToUp(ctxAdminToken, userId, monenyCount)
-		time.Sleep(time.Second * 3)
-		// 充值结束后进行投注
-		gameCode, betContent, amount, betMultiple := lotterygameapi.GetBetResult()
-		if err := lotterygameapi.RunBetFunc(&ctxToken, gameCode, betContent, userAmount, amount, betMultiple); err != nil {
-			return err
-		} else {
-			return nil
-		}
+		// time.Sleep(time.Second * 3)
+		// // 充值结束后进行投注
+		// gameCode, betContent, amount, betMultiple := lotterygameapi.GetBetResult()
+		// if err := lotterygameapi.RunBetFunc(&ctxToken, gameCode, betContent, userAmount, amount, betMultiple); err != nil {
+		// 	return err
+		// } else {
+		// 	return nil
+		//}
 	}
 
 	// 初始化随机数种子,有些下级充值有些下级不充值
@@ -383,4 +384,5 @@ func RunWhille(userAmount string, yqCode string, monenyCount float64) error {
 	// 	// 后台进行登录和人工充值
 	// 	adminRun(userAmount, monenyCount)
 	// }
+	return nil
 }

@@ -24,7 +24,7 @@ func UniversalTaskNoArgs(
 ) *boomer.Task {
 
 	return UniversalTaskWithRoundRobinToken(totalRequests, targetRPS, taskDuration, taskName,
-		func(tokenCtx *context.Context, _ ...interface{}) (int64, bool, string) {
+		func(tokenCtx *context.Context, _ ...any) (int64, bool, string) {
 			return bizFunc(tokenCtx)
 		})
 }
@@ -35,8 +35,8 @@ func UniversalTaskWithRoundRobinToken(
 	targetRPS int64,
 	taskDuration int64,
 	taskName string,
-	bizFunc func(tokenCtx *context.Context, args ...interface{}) (int64, bool, string),
-	args ...interface{},
+	bizFunc func(tokenCtx *context.Context, args ...any) (int64, bool, string),
+	args ...any,
 ) *boomer.Task {
 
 	log.Printf("启动任务: %s | 目标RPS: %d | 最大运行: %ds", taskName, targetRPS, taskDuration)

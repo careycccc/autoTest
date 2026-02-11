@@ -29,7 +29,7 @@ func ReceiveDailyCheckInRewardApi(ctx *context.Context, activityId, rewardType i
 	api := "/api/Activity/ReceiveDailyCheckInReward"
 	payloadStruct := &ReceiveDailyCheckInReward{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{activityId, rewardType, random, language, "", timestamp}
+	payloadList := []any{activityId, rewardType, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Activity/ReceiveDailyCheckInReward请求失败", err)), err
 	} else {

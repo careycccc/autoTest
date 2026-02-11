@@ -25,7 +25,7 @@ type Response struct {
 	Code    int         `json:"code"`
 	Msg     string      `json:"msg"`
 	MsgCode int         `json:"msgCode"`
-	Data    interface{} `json:"data,omitempty"`
+	Data    any `json:"data,omitempty"`
 }
 
 // 投注类型的响应

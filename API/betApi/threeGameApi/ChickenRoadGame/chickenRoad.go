@@ -161,7 +161,7 @@ func playOneRound(wsURL string, betAmount int64) bool {
 	log.Printf("本局目标：第 %d 步自动停止", stopAt)
 
 	// 下注
-	send(conn, "bet", map[string]interface{}{
+	send(conn, "bet", map[string]any{
 		"amount": betAmount,
 	})
 	time.Sleep(600 * time.Millisecond)
@@ -198,13 +198,13 @@ func playOneRound(wsURL string, betAmount int64) bool {
 				continue
 			}
 
-			var data map[string]interface{}
+			var data map[string]any
 			json.Unmarshal(parts[1], &data)
 			action := data["action"].(string)
 
 			if action == "step" {
 				stepCount++
-				line := data["payload"].(map[string]interface{})["lineNumber"].(float64)
+				line := data["payload"].(map[string]any)["lineNumber"].(float64)
 				log.Printf("第 %d 步 → 当前车道 %.0f", stepCount, line)
 
 				if stepCount >= stopAt {
@@ -233,12 +233,12 @@ func playOneRound(wsURL string, betAmount int64) bool {
 }
 
 // 统一发送 gameService 消息
-func send(conn *websocket.Conn, action string, payload interface{}) {
-	msg := map[string]interface{}{
+func send(conn *websocket.Conn, action string, payload any) {
+	msg := map[string]any{
 		"action":  action,
 		"payload": payload,
 	}
-	data := []interface{}{"gameService", msg}
+	data := []any{"gameService", msg}
 	b, _ := json.Marshal(data)
 	full := "42" + string(b)
 	conn.WriteMessage(websocket.TextMessage, []byte(full))
@@ -249,8 +249,8 @@ type GameLoginResponse struct {
 	Success            bool          `json:"success"`
 	Result             string        `json:"result"`     // 就是我们要的 token
 	Data               string        `json:"data"`       // 和 result 内容一样，很多平台都双发
-	GameConfig         interface{}   `json:"gameConfig"` // null
-	Bonuses            []interface{} `json:"bonuses"`
+	GameConfig         any   `json:"gameConfig"` // null
+	Bonuses            []any `json:"bonuses"`
 	IsLobbyEnabled     bool          `json:"isLobbyEnabled"`
 	IsPromoCodeEnabled bool          `json:"isPromoCodeEnabled"`
 	IsSoundEnabled     bool          `json:"isSoundEnabled"`

@@ -15,7 +15,7 @@ import (
 )
 
 // 一个函数类型
-type payloadMapfunc func(structType interface{}, slice []interface{}) (map[string]interface{}, error)
+type payloadMapfunc func(structType any, slice []any) (map[string]any, error)
 
 /*
 主要是抽象出各种请求模板
@@ -32,7 +32,7 @@ func DeskTenAuthorRequest[P any](ctx *context.Context, api string, payload *P, p
 	plant_h5 := config.GoodsDeposit_URL
 	token := (*ctx).Value(desklogin.DeskAuthTokenKey)
 	// fmt.Println("前台登陆后的token", token)
-	header_list := []interface{}{plant_h5, plant_h5, token}
+	header_list := []any{plant_h5, plant_h5, token}
 	if headerMap, err := request.AssignSliceToStructMap(header_struct, header_list); err != nil {
 		return nil, nil, errors.New("failed to convert headerMap struct to map")
 
@@ -77,7 +77,7 @@ func DeskTrodRegRequest[P any](ctx *context.Context, api string, payload *P, pay
 	// 请求头的设定
 	header_struct := &model.DeskHeaderTenantIdStruct2{}
 	plant_h5 := config.GoodsDeposit_URL
-	header_list := []interface{}{plant_h5, plant_h5}
+	header_list := []any{plant_h5, plant_h5}
 	if headerMap, err := request.InitStructToMap(header_struct, header_list); err != nil {
 		return nil, nil, errors.New("failed to convert headerMap struct to map")
 
@@ -114,7 +114,7 @@ func DeskTrodRegRequest2[P any](ctx *context.Context, api string, payload *P, pa
 	// 请求头的设定
 	header_struct := &model.DeskHeaderTenantIdStruct2{}
 	plant_h5 := config.REGISTER_URL
-	header_list := []interface{}{plant_h5, plant_h5}
+	header_list := []any{plant_h5, plant_h5}
 	if headerMap, err := request.InitStructToMap(header_struct, header_list); err != nil {
 		return nil, nil, errors.New("failed to convert headerMap struct to map")
 
@@ -155,7 +155,7 @@ func AdminRodAutRequest[P any](ctx *context.Context, api string, payload *P, pay
 	// 请求头的设定
 	header_struct := &model.AdminHeaderStruct{}
 	token := (*ctx).Value(login.AuthTokenKey)
-	header_list := []interface{}{base_url, base_url, base_url, token}
+	header_list := []any{base_url, base_url, base_url, token}
 	if headerMap, err := request.AssignSliceToStructMap(header_struct, header_list); err != nil {
 		return nil, nil, errors.New("failed to convert headerMap struct to map")
 

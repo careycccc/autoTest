@@ -31,7 +31,7 @@ type TaskPayload struct {
 func BatchUpdateUsers(ctx *context.Context, userIds []int64) error {
 	// A. 定义并发池的 Worker 逻辑
 	// 这个函数会被 ants 池里的协程反复调用
-	workerFunc := func(i interface{}) {
+	workerFunc := func(i any) {
 		// 1. 参数断言（拆包）
 		payload, ok := i.(*TaskPayload)
 		if !ok {

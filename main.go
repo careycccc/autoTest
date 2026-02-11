@@ -1,7 +1,7 @@
 package main
 
 import (
-	"autoTest/API/adminApi/common"
+	invitationcarousel "autoTest/API/deskApi/invitationCarousel"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -29,9 +29,9 @@ func main() {
 	// } else {
 	// 	fmt.Println("-------", ctxToken)
 	// }
-	// invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
+	invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
 	// invitationcarousel.RunSpinInvitedWheel() // 当前用户邀请转盘自动邀请下级
-	invitecode.RunInvite() // 多级下级邀请
+	// invitecode.RunInvite() // 多级下级邀请
 	// withdrawcash.RunWithDrawCase() // 提现
 	// topup.RunRechargeGoods()
 	// GameBetOrders.RunGameBetOrders()              // 后台投注订单的查询
@@ -52,5 +52,17 @@ func main() {
 	// dailycheckin.GetReceiveRecord() // 每日签到活动报表查看
 	// dailycheckin.RunDailyCheckInActivity() // 每日签到活动
 	// rechargewheel.RunAddWheel()  // 一键为后台配置4个充值转盘的配置
-	//common.RandUserTopupGame() // 随机从用户列表中选择用户进行充值，投注
+	// common.RandUserTopupGame() // 随机从用户列表中选择用户进行充值，投注
+	// common.ToupBet()
+
+	// 验证邮箱注册
+	// registerapi.RunEmailregeister()
+	// uidList := utils.RandmoUserId(100)
+
+	// for i := 0; i < len(uidList); i++ {
+	// 	registerapi.GeneralAgentRegister1(uidList[i])
+	// }
+	// for i := 0; i < 1000; i++ {
+	// 	registerapi.GeneralAgentRegister1("915645645874")
+	// }
 }

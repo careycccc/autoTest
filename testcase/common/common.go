@@ -29,7 +29,7 @@ type logEntry struct {
 	Caller    string      `json:"caller"`
 	Msg       string      `json:"msg"`
 	TestName  string      `json:"testName"`
-	Response  interface{} `json:"response"`
+	Response  any `json:"response"`
 }
 
 // logStore 存储每个测试用例的最后日志条目
@@ -84,7 +84,7 @@ func CommonLabels(api string, severity string) []*allure.Label {
 }
 
 // LogAssertion 记录断言结果
-func LogAssertion(t provider.StepCtx, testName, message string, success bool, response interface{}) {
+func LogAssertion(t provider.StepCtx, testName, message string, success bool, response any) {
 	logger := initLogger()
 	level := "info"
 	msg := "断言成功"

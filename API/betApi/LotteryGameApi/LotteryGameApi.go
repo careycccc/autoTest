@@ -52,12 +52,12 @@ func BetWingo(gameCode string, amount, betMultiple int, betContent, issueNumber,
 	// 参数化
 	bet := &BetRequest{}
 	timestamp, random, language := request.GetTimeRandom()
-	betResultList := []interface{}{gameCode, issueNumber, amount, betMultiple, betContent, language, random, "", timestamp}
+	betResultList := []any{gameCode, issueNumber, amount, betMultiple, betContent, language, random, "", timestamp}
 	resultMap, _ := request.InitStructToMap(bet, betResultList)
 	// 获取请求头
 	deskA := &BetTokenStruct{}
 	url_h5 := config.WMG_H5
-	desSlice := []interface{}{url_h5, url_h5, token}
+	desSlice := []any{url_h5, url_h5, token}
 	headMap, _ := request.AssignSliceToStructMap(deskA, desSlice)
 	respBody, _, err := request.PostRequestCofig(resultMap, url, api, headMap)
 	if err != nil {

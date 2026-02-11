@@ -25,9 +25,9 @@ func Md5Info(data string, uppercase bool) string {
 // 输入：任意 JSON（string 或 []byte）
 // verifyPwd：你的密钥字符串，传 nil 表示不拼接
 // 输出：和大写 MD5 签名，完全匹配你们系统
-func GenerateSignatureFromJSON(jsonInput interface{}, verifyPwd *string) (string, error) {
+func GenerateSignatureFromJSON(jsonInput any, verifyPwd *string) (string, error) {
 	// 1. 解析成 map
-	var body map[string]interface{}
+	var body map[string]any
 	switch v := jsonInput.(type) {
 	case string:
 		if err := json.Unmarshal([]byte(v), &body); err != nil {
@@ -37,14 +37,14 @@ func GenerateSignatureFromJSON(jsonInput interface{}, verifyPwd *string) (string
 		if err := json.Unmarshal(v, &body); err != nil {
 			return "", err
 		}
-	case map[string]interface{}:
+	case map[string]any:
 		body = v
 	default:
 		return "", fmt.Errorf("input must be json string/bytes or map")
 	}
 
 	// 2. 完全复制你的 GetSignature 逻辑
-	filteredObj := make(map[string]interface{})
+	filteredObj := make(map[string]any)
 	keys := make([]string, 0, len(body))
 	for key := range body {
 		keys = append(keys, key)
@@ -55,7 +55,7 @@ func GenerateSignatureFromJSON(jsonInput interface{}, verifyPwd *string) (string
 		value := body[key]
 		if value != nil && value != "" &&
 			key != "signature" && key != "timestamp" && key != "track" {
-			if _, ok := value.([]interface{}); !ok {
+			if _, ok := value.([]any); !ok {
 				filteredObj[key] = value
 			}
 		}
@@ -90,7 +90,14 @@ func GenerateSignatureFromJSON(jsonInput interface{}, verifyPwd *string) (string
 
 // 运行检测签名
 func RunCheckSign() {
-	jsonStr := `{"championId": 500019, "language": "en", "random": 467252996243, "signature": "", "timestamp": 1767758374}`
+	jsonStr := `{
+  "userName": "carey3004",
+  "pwd": "qwer1234",
+  "language": "zh",
+  "signature": "",
+  "random": 449677317024,
+  "timestamp": 1770358665
+}`
 
 	sig, err := GenerateSignatureFromJSON(jsonStr, nil)
 	if err != nil {

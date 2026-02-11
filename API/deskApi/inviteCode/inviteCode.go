@@ -85,7 +85,9 @@ func BindOneLevel(ctx *context.Context, parentInviteCodes []string, mobileCount 
 	fmt.Printf("🔗 [层级%d] 父级%d人 -> 生成%d个下级...\n", level+1, len(parentInviteCodes), mobileCount)
 
 	// Step 1: **一次性**生成当前层所有手机号
-	mobileIds := utils.RandmoUserId(mobileCount)
+	// mobileIds := utils.RandmoUserId(mobileCount)
+	// Step 1: **一次性**生成当前层所有邮箱
+	mobileIds := utils.RandmoUserEmailId(mobileCount)
 	if len(mobileIds) != mobileCount {
 		return fmt.Errorf("生成手机号数量不匹配: 期望%d, 实际%d", mobileCount, len(mobileIds))
 	}
@@ -107,7 +109,7 @@ func BindOneLevel(ctx *context.Context, parentInviteCodes []string, mobileCount 
 			parentInviteCode := parentInviteCodes[rand.Intn(len(parentInviteCodes))]
 
 			// 🔥 **同时**发起注册（你的核心逻辑）
-			_, subCtx, err := registerapi.RegisterMobileLoginFunc(mobile, parentInviteCode)
+			_, subCtx, err := registerapi.EmailRegisterApi(mobile, parentInviteCode)
 			if err != nil {
 				errChan <- fmt.Errorf("注册失败 %s -> %s: %w", mobile, parentInviteCode, err)
 				return
@@ -246,14 +248,14 @@ func min(a, b int) int {
 
 // RunInvite 一键执行
 func RunInvite() {
-	inviteCode := "BNEHQWN" // 总代的邀请码
+	inviteCode := "VTHPCVN" // 总代的邀请码
 	ctx, err := login.RunAdminSitLogin()
 	if err != nil {
 		fmt.Println("❌ 登录失败:", err)
 		return
 	}
 
-	subordinates := []int{5, 3, 2} // 第1层2人，第2层3人
+	subordinates := []int{2, 1} // 第1层2人，第2层3人
 	userDB = make(map[string]*User)
 	fmt.Printf("🎯 开始绑定到总代: %s, 层级: %v\n", inviteCode, subordinates)
 

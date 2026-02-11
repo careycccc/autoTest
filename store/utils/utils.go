@@ -35,9 +35,9 @@ func Md5Info(data string, uppercase bool) string {
 }
 
 // GetSignature 传入一个map 生成签名
-func GetSignature(body map[string]interface{}, verifyPwd *string) string {
+func GetSignature(body map[string]any, verifyPwd *string) string {
 	// 过滤字段
-	filteredObj := make(map[string]interface{})
+	filteredObj := make(map[string]any)
 	keys := make([]string, 0, len(body))
 	for key := range body {
 		keys = append(keys, key)
@@ -49,7 +49,7 @@ func GetSignature(body map[string]interface{}, verifyPwd *string) string {
 		// 检查 value 不为 nil 且不为空字符串，且 key 不在排除列表中，且 value 不是数组
 		if value != nil && value != "" && key != "signature" && key != "timestamp" && key != "track" {
 			// 确保 value 不是切片（相当于 Python 的 list）
-			if _, ok := value.([]interface{}); !ok {
+			if _, ok := value.([]any); !ok {
 				filteredObj[key] = value
 			}
 		}
@@ -86,7 +86,7 @@ func GetSignature(body map[string]interface{}, verifyPwd *string) string {
 // 传入一个结构体获取返回签名
 func GetSignature2(body any, verifyPwd *string) string {
 	// 过滤字段并转换为 map 以便排序
-	filteredObj := make(map[string]interface{})
+	filteredObj := make(map[string]any)
 	excludeKeys := map[string]bool{"signature": true, "timestamp": true, "track": true}
 
 	// 使用反射获取结构体字段
@@ -131,7 +131,7 @@ func GetSignature2(body any, verifyPwd *string) string {
 }
 
 // isEmpty 检查值是否为空（nil、零值或空字符串）
-func isEmpty(value interface{}) bool {
+func isEmpty(value any) bool {
 	if value == nil {
 		return true
 	}
@@ -152,7 +152,7 @@ func isEmpty(value interface{}) bool {
 }
 
 // 用来解析请求
-func Unmarshal(strResbody string) (result map[string]interface{}) {
+func Unmarshal(strResbody string) (result map[string]any) {
 	// 是一个字符串
 	error := json.Unmarshal([]byte(strResbody), &result)
 	if error != nil {
@@ -163,7 +163,7 @@ func Unmarshal(strResbody string) (result map[string]interface{}) {
 
 // 读取yaml
 // ReadYAML 从指定路径读取 YAML 文件并解析到结构体
-func ReadYAML(filePath string, result interface{}) error {
+func ReadYAML(filePath string, result any) error {
 	// 读取文件内容
 	data, err := os.ReadFile(filePath)
 	if err != nil {
@@ -179,7 +179,7 @@ func ReadYAML(filePath string, result interface{}) error {
 }
 
 // WriteYAML 将数据追加写入到 ./yaml/subUser.yaml 文件，每行一个数据
-func WriteYAML(data ...interface{}) error {
+func WriteYAML(data ...any) error {
 	file, err := os.OpenFile(config.SUBUSERYAML, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		logger.LogError("文件创建或者打开失败", err)

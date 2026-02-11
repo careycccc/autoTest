@@ -19,7 +19,7 @@ func SetWithdrawPasswordApi(ctx *context.Context) (*model.BetResponse, error) {
 	api := "/api/User/SetWithdrawPassword"
 	payloadStruct := &SetWithdrawPasswordStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{config.WithdrawPassword, random, language, "", timestamp}
+	payloadList := []any{config.WithdrawPassword, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.DeskTenAuthorRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes2(model.ErrorLoggerType("/api/User/SetWithdrawPassword设置提现密码请求失败", err)), err
 	} else {

@@ -38,7 +38,7 @@ func AddUserBank(ctx *context.Context, userId string) (*model.BetResponse, error
 		return nil, nil
 	}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{bankcode, cardNo, mobileNo, email, ifscCode, userId, 1, random, language, "", timestamp}
+	payloadList := []any{bankcode, cardNo, mobileNo, email, ifscCode, userId, 1, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes2(model.ErrorLoggerType("/api/Users/AddUserWallet添加银行卡请求失败", err)), err
 	} else {
@@ -67,7 +67,7 @@ func AddUserWallet(ctx *context.Context, userId string) (*model.BetResponse, err
 	bankcode := "ceshiyong"
 	mobileNo, _ := utils.GenerateBankCard(12)
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{bankcode, mobileNo, userId, 2, random, language, "", timestamp}
+	payloadList := []any{bankcode, mobileNo, userId, 2, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes2(model.ErrorLoggerType("/api/Users/AddUserWallet添加电子钱包请求失败", err)), err
 	} else {
@@ -95,7 +95,7 @@ func AddUserPix(ctx *context.Context, userId string) (*model.BetResponse, error)
 	payloadStruct := &AddPixStruct{}
 	mobileNo, _ := utils.GenerateBankCard(10)
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{mobileNo, "Phone", userId, 3, random, language, "", timestamp}
+	payloadList := []any{mobileNo, "Phone", userId, 3, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes2(model.ErrorLoggerType("/api/Users/AddUserWallet添加pix请求失败", err)), err
 	} else {
@@ -127,7 +127,7 @@ func AddUserUsdt(ctx *context.Context, userId string) (*model.BetResponse, error
 	api := "/api/Users/AddUserWallet"
 	payloadStruct := &AddUsdtStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{address, address, "TRC20", userId, 4, random, language, "", timestamp}
+	payloadList := []any{address, address, "TRC20", userId, 4, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes2(model.ErrorLoggerType("/api/Users/AddUserWallet添加pix请求失败", err)), err
 	} else {
@@ -157,7 +157,7 @@ func AddUserUpi(ctx *context.Context, userId string) (*model.BetResponse, error)
 	api := "/api/Users/AddUserWallet"
 	payloadStruct := &AddUsdtStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{upiId, userId, 5, random, language, "", timestamp}
+	payloadList := []any{upiId, userId, 5, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes2(model.ErrorLoggerType("/api/Users/AddUserWallet添加upi请求失败", err)), err
 	} else {

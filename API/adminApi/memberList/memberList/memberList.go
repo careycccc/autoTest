@@ -45,7 +45,7 @@ func GetUserIdApi(ctx *context.Context, account string) (*model.Response, int64,
 	api := "/api/Users/GetPageList"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &GetUserApistruct{}
-	payloadList := []interface{}{account, 1, 20, "Desc", random, language, "", timestamp}
+	payloadList := []any{account, 1, 20, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList请求失败", err)), -1, err
 	} else {
@@ -92,7 +92,7 @@ func GetUserInviteCodeApi(ctx *context.Context, account string) (*model.Response
 	api := "/api/Users/GetPageList"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &GetUserApistruct{}
-	payloadList := []interface{}{account, 1, 20, "Desc", random, language, "", timestamp}
+	payloadList := []any{account, 1, 20, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList请求失败", err)), "", err
 	} else {
@@ -134,7 +134,7 @@ func AddUsers(ctx *context.Context, userAmount string) (*model.Response, error) 
 	api := "/api/Users/AddUsers"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &AddUserStruct{}
-	payloadList := []interface{}{userAmount, 0, config.SUB_PWD, "", 1, random, language, "", timestamp}
+	payloadList := []any{userAmount, 0, config.SUB_PWD, "", 1, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/AddUsers请求失败", err)), err
 	} else {
@@ -196,7 +196,7 @@ func GetUserListApi(ctx *context.Context, pageSize, userNumber int, userType int
 	api := "/api/Users/GetPageList"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &GetUserListStruct{}
-	payloadList := []interface{}{userType, pageSize, userNumber, "Desc", random, language, "", timestamp}
+	payloadList := []any{userType, pageSize, userNumber, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList请求失败", err)), nil, err
 	} else {
@@ -229,7 +229,7 @@ func GetUserVipListApi(ctx *context.Context, pageSize, userNumber int, userType 
 	api := "/api/Users/GetPageList"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &GetUserVipListStruct{}
-	payloadList := []interface{}{vipLevel, userType, pageSize, userNumber, "Desc", random, language, "", timestamp}
+	payloadList := []any{vipLevel, userType, pageSize, userNumber, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList请求失败", err)), nil, err
 	} else {
@@ -272,7 +272,7 @@ func GetUserAmount(ctx *context.Context, userid int) (*model.Response, string, e
 	api := "/api/Users/GetUserAccount"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &UserAmount{}
-	payloadList := []interface{}{userid, random, language, "", timestamp}
+	payloadList := []any{userid, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetUserAccount请求失败", err)), "", err
 	} else {
@@ -300,7 +300,7 @@ func GetUserDetail(ctx *context.Context, userid int) (*model.Response, *UserInfo
 	api := "/api/Users/GetPageList"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &UserinfoStruct{}
-	payloadList := []interface{}{userid, 1, 20, "Desc", random, language, "", timestamp}
+	payloadList := []any{userid, 1, 20, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/Users/GetPageList请求失败", err)), nil, err
 	} else {

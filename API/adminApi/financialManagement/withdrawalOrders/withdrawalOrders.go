@@ -26,7 +26,7 @@ func ConfirmWithdrawOrderApi(ctx *context.Context, userId int, withdrawinfo With
 	api := "/api/WithdrawOrder/ConfirmWithdrawOrder"
 	payloadStruct := &ConfirmWithdrawOrder{}
 	timestamp, random, language := request.GetTimeRandom()
-	payloadList := []interface{}{withdrawinfo.orderNo, userId, withdrawinfo.createTime, config.Remark, random, language, "", timestamp}
+	payloadList := []any{withdrawinfo.orderNo, userId, withdrawinfo.createTime, config.Remark, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes2(model.ErrorLoggerType("/api/WithdrawOrder/ConfirmWithdrawOrder请求失败", err)), err
 	} else {

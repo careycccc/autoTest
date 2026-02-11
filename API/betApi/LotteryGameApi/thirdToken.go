@@ -14,9 +14,9 @@ import (
 
 // 前台获取下注的token
 type BetTokenStruct struct {
-	Referer       interface{}
-	Origin        interface{}
-	Authorization interface{}
+	Referer       any
+	Origin        any
+	Authorization any
 }
 
 // 主要是针对那三个get请求获取token，为后面的投注的token
@@ -35,7 +35,7 @@ func ThridTokenFunc(token, gameCode string) (string, error) {
 	// 初始化结构体并且赋值
 	GetGameInfo := &GetGameInfoStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	values := []interface{}{gameCode, language, random, "", timestamp}
+	values := []any{gameCode, language, random, "", timestamp}
 	paramsMap, _ := request.InitStructToMap(GetGameInfo, values)
 	// 获取签名
 	verifyPwd := ""
@@ -52,7 +52,7 @@ func ThridTokenFunc(token, gameCode string) (string, error) {
 		logger.LogError("/api/ThirdGame/GetGameUrl报错", err)
 		return "", err
 	}
-	desSlice := []interface{}{url_h5, url_h5, ThirdGametoken}
+	desSlice := []any{url_h5, url_h5, ThirdGametoken}
 	headMap, _ := request.AssignSliceToStructMap(deskA, desSlice)
 	_, resp, err := request.GetRequest(baseUrl, api, headMap, paramsMap)
 	if err != nil {
@@ -89,7 +89,7 @@ func GetBalanceInfoFunc(ctx *context.Context, gameCode string) (string, float64,
 	// 初始化结构体并且赋值
 	GetGameInfo := &model.BaseStruct{}
 	timestamp, random, language := request.GetTimeRandom()
-	values := []interface{}{random, language, "", timestamp}
+	values := []any{random, language, "", timestamp}
 	paramsMap, _ := request.InitStructToMap(GetGameInfo, values)
 
 	// 获取签名
@@ -109,7 +109,7 @@ func GetBalanceInfoFunc(ctx *context.Context, gameCode string) (string, float64,
 		return "", 0.0, err
 	}
 
-	desSlice := []interface{}{url_h5, url_h5, ThridTokenToken}
+	desSlice := []any{url_h5, url_h5, ThridTokenToken}
 	headMap, _ := request.AssignSliceToStructMap(deskA, desSlice)
 	respBoy, resp, err := request.GetRequest(baseUrl, api, headMap, paramsMap)
 	if err != nil {

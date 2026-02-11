@@ -3,7 +3,7 @@ package rechargewheel
 import (
 	financialmanagement "autoTest/API/adminApi/financialManagement"
 	"autoTest/API/adminApi/login"
-	getgiftinfo "autoTest/API/deskApi/activeGift/Getgiftinfo"
+	getgiftinfo "autoTest/API/deskApi/activeGift/getgiftinfo"
 	getuserinfo "autoTest/API/deskApi/getUserinfo"
 	registerapi "autoTest/API/deskApi/registerApi"
 	"autoTest/API/utils"
@@ -48,7 +48,7 @@ func SetRechargeWheelCondition(ctx *context.Context, value1 int8) (*model.Respon
 	api := "/api/RechargeWheel/UpdateConfig"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &SetRechargeWheelConditionStruct{}
-	payloadList := []interface{}{"RechargeWheelNeedFirstRechargeSwitch", value1, random, language, "", timestamp}
+	payloadList := []any{"RechargeWheelNeedFirstRechargeSwitch", value1, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("/api/RechargeWheel/UpdateConfig 请求失败", err)), err
 	} else {
@@ -86,7 +86,7 @@ func GetFirstRechargeWheelInfo(ctx *context.Context) (*model.Response, []TaskCon
 	api := "/api/RechargeWheel/Get"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &GetFirstRechargeWheel{}
-	payloadList := []interface{}{1, random, language, "", timestamp}
+	payloadList := []any{1, random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("", err)), nil, err
 	} else {
@@ -152,7 +152,7 @@ func GetPageListRewardRecord(ctx *context.Context, userId int) (*model.Response,
 	api := "/api/RechargeWheel/GetPageListRewardRecord"
 	timestamp, random, language := request.GetTimeRandom()
 	payloadStruct := &GetPageListRewardRecordStruct{}
-	payloadList := []interface{}{userId, 1, 20, "Desc", random, language, "", timestamp}
+	payloadList := []any{userId, 1, 20, "Desc", random, language, "", timestamp}
 	if respBoy, _, err := requstmodle.AdminRodAutRequest(ctx, api, payloadStruct, payloadList, request.StructToMap); err != nil {
 		return model.HandlerErrorRes(model.ErrorLoggerType("", err)), nil, err
 	} else {
