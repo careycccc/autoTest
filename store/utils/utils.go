@@ -245,6 +245,11 @@ func GenerateRandomInt(min, max int64) (float64, error) {
 		return 0, fmt.Errorf("min must be less than or equal to max")
 	}
 
+	// 如果 min == max，直接返回该值
+	if min == max {
+		return float64(min), nil
+	}
+
 	// 生成一个大于等于0且小于max-min的随机数
 	randomInt, err := rand.Int(rand.Reader, big.NewInt(max-min))
 	if err != nil {

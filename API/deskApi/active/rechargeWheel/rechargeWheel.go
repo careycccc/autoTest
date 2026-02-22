@@ -3,7 +3,7 @@ package rechargewheel
 import (
 	financialmanagement "autoTest/API/adminApi/financialManagement"
 	"autoTest/API/adminApi/login"
-	getgiftinfo "autoTest/API/deskApi/activeGift/getgiftinfo"
+	getgiftinfo "autoTest/API/deskApi/active/getGiftInfo"
 	getuserinfo "autoTest/API/deskApi/getUserinfo"
 	registerapi "autoTest/API/deskApi/registerApi"
 	"autoTest/API/utils"

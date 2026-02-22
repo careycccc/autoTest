@@ -36,7 +36,7 @@ func EmailRegisterApi(userName, inviteCode string) (*model.Response, context.Con
 		payload := &EmailRegister{}
 		timestamp, random, language := request.GetTimeRandom()
 		payloadList := []any{userName, inviteCode, "Email", "", config.ADMIN_PWD, verifyCode, random, language, "", timestamp}
-		if respBody, _, err := requstmodle.DeskTrodRegRequest2(&ctx, api, payload, payloadList, request.StructToMap); err != nil {
+		if respBody, _, err := requstmodle.DeskTrodRegRequest(&ctx, api, payload, payloadList, request.StructToMap); err != nil {
 			return model.HandlerErrorRes(model.ErrorLoggerType("/api/Home/Register 请求失败", err)), nil, err
 		} else {
 			if string(respBody) == "" {
@@ -62,13 +62,13 @@ func EmailRegisterApi(userName, inviteCode string) (*model.Response, context.Con
 // 该函数生成随机邮箱地址，并调用注册API进行注册
 func RunEmailregeister() {
 	// 初始化邀请码为空字符串
-	inviteCode := "PBZXTZW"
+	inviteCode := "UPW8LNN"
 	// 生成随机邮箱地址作为用户名
 	userName := utils.GenerateRandomEmail()
 
-	// 调用邮箱注册API，传入邀请码和用户名
+	// 调用邮箱注册API，传入用户名和邀请码
 	// 处理可能的错误情况
-	if resp, ctx, err := EmailRegisterApi(inviteCode, userName); err != nil {
+	if resp, ctx, err := EmailRegisterApi(userName, inviteCode); err != nil {
 		// 记录注册失败的警告日志，包含API响应
 		logger.Logger.Warn("注册失败", resp)
 		// 记录详细的错误日志

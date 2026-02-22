@@ -150,6 +150,8 @@ func SendToGetVerCode(ctx *context.Context, VerifyCodeType int, codeType int8, u
 		return resp, "", err
 	} else {
 		<-ch
+		// 等待验证码生成，避免查询过快
+		time.Sleep(time.Second * 2)
 		if res, verficationCode, err := GetVerificationCode(ctxToken, userName); err != nil {
 			return res, "", err
 		} else {

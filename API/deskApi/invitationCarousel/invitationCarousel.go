@@ -330,12 +330,20 @@ func RunTaskWhille(yqCode string, monenyCount float64, ctx *context.Context) {
 // 任务函数，调用 RunWhille 并更新公共数据
 func TaskWhille(id int, wg *sync.WaitGroup, yqCode *string, monenyCount *float64, lock *sync.Mutex) {
 	defer wg.Done()
+
+	// 添加随机延迟，避免并发请求过快
+	time.Sleep(time.Duration(id) * time.Second * 2)
+
 	// 随机生成账号
 	userAmount := sutils.GenerateRandomEmail()
+
 	// 使用单个锁保护对三个公共数据的联合操作
 	lock.Lock()
 	// 调用 RunWhille，传入当前公共数据值
-	RunWhille(userAmount, *yqCode, *monenyCount)
+	err := RunWhille(userAmount, *yqCode, *monenyCount)
+	if err != nil {
+		logger.Logger.Warn("邀请下级失败", "账号:", userAmount, "错误:", err)
+	}
 	lock.Unlock()
 }
 
@@ -347,8 +355,13 @@ monenyCount 邀请转盘的充值金额
 **/
 func RunWhille(userAmount string, yqCode string, monenyCount float64) error {
 	// 发送注册
-	if _, _, err := registerapi.EmailRegisterApi(userAmount, yqCode); err != nil {
+	if resp, _, err := registerapi.EmailRegisterApi(userAmount, yqCode); err != nil {
+		logger.LogError("注册失败", err)
 		return err
+	} else if !model.IsSuccess(resp) {
+		// 检查响应状态，如果不成功则记录并返回错误
+		logger.Logger.Warn("注册失败，响应码:", resp.Code, "消息:", resp.Msg, "用户:", userAmount)
+		return fmt.Errorf("注册失败: %s (code: %d)", resp.Msg, resp.Code)
 	} else {
 		logger.Logger.Info("注册成功", userAmount)
 		// 后台登录
