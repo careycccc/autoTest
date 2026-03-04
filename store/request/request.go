@@ -104,6 +104,8 @@ func PostRequestCofig(payload map[string]any, base_url, api string, args ...map[
 	req.Header.Set("Connection", "keep-alive")
 	client := checkHttp2()
 
+	// 请求头有哪些
+	// fmt.Println(req.Header)
 	// 发送请求
 	resp, err := client.Do(req)
 	if err != nil {

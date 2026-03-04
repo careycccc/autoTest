@@ -1,7 +1,7 @@
 package main
 
 import (
-	invitationcarousel "autoTest/API/deskApi/invitationCarousel"
+	invitecode "autoTest/API/deskApi/inviteCode"
 	_ "autoTest/store/config"
 	"autoTest/store/logger"
 )
@@ -29,9 +29,9 @@ func main() {
 	// } else {
 	// 	fmt.Println("-------", ctxToken)
 	// }
-	invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
+	// invitationcarousel.RunSpinInvitedWheelWork() // 邀请转盘
 	// invitationcarousel.RunSpinInvitedWheel() // 当前用户邀请转盘自动邀请下级
-	// invitecode.RunInvite() // 多级下级邀请
+	invitecode.RunInvite() // 多级下级邀请
 	// withdrawcash.RunWithDrawCase() // 提现
 	// topup.RunRechargeGoods()
 	// GameBetOrders.RunGameBetOrders()              // 后台投注订单的查询
@@ -51,7 +51,7 @@ func main() {
 	// everydayCheckin.RunEverydayCheckIn()    // 每日签到活动
 	// dailycheckin.GetReceiveRecord() // 每日签到活动报表查看
 	// dailycheckin.RunDailyCheckInActivity() // 每日签到活动
-	// rechargewheel.RunAddWheel()  // 一键为后台配置4个充值转盘的配置
+	// rechargewheel.RunAddWheel() // 一键为后台配置4个充值转盘的配置
 	// common.RandUserTopupGame() // 随机从用户列表中选择用户进行充值，投注
 	// common.ToupBet()
 
@@ -64,5 +64,8 @@ func main() {
 	// }
 	// for i := 0; i < 1000; i++ {
 	// 	registerapi.GeneralAgentRegister1("915645645874")
+	// }
+	// if err := lotterygameapi.BetRun("919876123427"); err != nil {
+	// 	fmt.Println("投注失败信息", err)
 	// }
 }

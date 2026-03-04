@@ -63,9 +63,9 @@ func ProcessNewUser(inviteCode string) error {
 			} else {
 				// 上面的充值结束后台，在进行投注
 				time.Sleep(time.Second * 2)
-				// 先把投注的结果随机出来
-				gameCode, betContent, amount, betMultiple := lotterygameapi.GetBetResult()
-				if err := lotterygameapi.RunBetFunc(userDetail.ctx, gameCode, betContent, userDetail.userAccount, amount, betMultiple); err != nil {
+				// 使用 BetRun 进行投注
+				if err := lotterygameapi.BetRun(userDetail.userAccount); err != nil {
+					logger.LogError("投注失败", err)
 					continue
 				}
 			}
